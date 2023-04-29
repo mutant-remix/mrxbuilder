@@ -1,82 +1,60 @@
 #[macro_use]
-extern crate log;
+extern crate paris;
+
+use rayon::prelude::*;
+
+mod load;
+use load::Data;
+
+mod rasterise;
+use rasterise::rasterise_svg;
+
+mod encode;
+use encode::{encode_rasters, EncodeTarget};
 
 use std::{
     fs,
-    path::PathBuf,
-    collections::HashMap
+    time::Instant,
 };
-use resvg::{
-    render,
-    FitTo,
-    tiny_skia::{Pixmap, Transform},
-    usvg::{Options, Tree, TreeParsing}
-};
+
 use image::{RgbaImage};
 
-fn walk_dir(path: &PathBuf, file_paths: &mut Vec<PathBuf>) -> std::io::Result<()> {
-    for entry in fs::read_dir(path)? {
-        let entry = entry?;
-        let path = entry.path();
-
-        if path.is_dir() {
-            walk_dir(&path, file_paths)?;
-        } else {
-            file_paths.push(path);
-        }
-    }
-    Ok(())
-}
-
 fn main() {
-    env_logger::init();
+    info!("=> Loading svgs");
+    let mut data = Data::new();
+    data.load();
 
-    info!("Loading svgs");
+    fs::create_dir_all("./out").unwrap();
 
-    let mut svg_paths: Vec<PathBuf> = Vec::new();
+    // Rasterise
+    let start = Instant::now();
+    info!("=> Rasterising {} svgs to 256x256", data.svg.len());
 
-    let root_path = std::env::current_dir().unwrap().join("../assets/svg");
-    walk_dir(&root_path, &mut svg_paths).unwrap();
+    let rasters: Vec<RgbaImage> = data.svg.par_iter().map(|(_, svg)| {
+        rasterise_svg(svg, 256)
+    }).collect();
 
-    let mut svg_files: HashMap<PathBuf, String> = HashMap::new();
-    for path in svg_paths {
-        let svg_file = fs::read_to_string(path.clone()).unwrap();
-        svg_files.insert(path, svg_file);
-    }
+    info!("   Took {}s", start.elapsed().as_secs_f32());
 
-    info!("Rendering svgs");
+    // Encode png
+    let start = Instant::now();
+    info!("=> Encoding png");
 
-    let mut rendered_svgs: HashMap<PathBuf, RgbaImage> = HashMap::new();
-    for (path, svg_file) in svg_files {
-        let tree = Tree::from_str(&svg_file, &Options::default()).unwrap();
+    let _png: Vec<Vec<u8>> = encode_rasters(&rasters, EncodeTarget::Png);
 
-        let mut pixmap = Pixmap::new(1024, 1024).unwrap();
-        render(
-            &tree,
-            FitTo::Original,
-            Transform::default().pre_scale(32.0, 32.0),
-            pixmap.as_mut()
-        ).unwrap();
+    info!("   Took {}s", start.elapsed().as_secs_f32());
+    info!("   Size: {}MiB", _png.iter().map(|image| {
+        image.len() as f32 / 1024.0 / 1024.0
+    }).sum::<f32>());
 
-        let data = pixmap.data();
-        let rgba_image = RgbaImage::from_raw(
-            1024,
-            1024,
-            data.to_vec()
-        ).unwrap();
+    // Encode webp
+    let start = Instant::now();
+    info!("=> Encoding webp");
 
-        debug!("Rendered {:?}", path.file_name());
+    let _webp: Vec<Vec<u8>> = encode_rasters(&rasters, EncodeTarget::Webp);
 
-        rendered_svgs.insert(path, rgba_image);
-    }
-
-    let out_path = std::env::current_dir().unwrap().join("./out");
-    fs::create_dir_all(&out_path).unwrap();
-
-    for (path, image) in rendered_svgs {
-        let png_path = out_path.join(path.file_name().unwrap()).with_extension("png");
-        image.save(png_path).unwrap();
-
-        debug!("Saved {:?}", path.file_name());
-    }
+    info!("   Took {}s", start.elapsed().as_secs_f32());
+    info!("   Size: {}MiB", _webp.iter().map(|image| {
+        image.len() as f32 / 1024.0 / 1024.0
+    }).sum::<f32>());
 }
