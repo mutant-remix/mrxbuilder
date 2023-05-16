@@ -126,7 +126,7 @@ Adding colormaps to an emoji will create multiple emoji entries, one for each co
 ```toml
 # Face
 [[emoji]]
-name = "grinning face",
+name = "grinning face"
 description = "A smiling face with smiling eyes and open mouth."
 src = "./grinning-face.svg"
 tags = [ "unicode" ]
@@ -137,7 +137,7 @@ labels = {
 
 # Non-unicode emoji with multiple color variations
 [[emoji]]
-name = "eating carrot",
+name = "eating carrot"
 description = "A human eating a carrot"
 src = "./eating-carrot.svg"
 tags = [ "extra" ]
@@ -150,7 +150,7 @@ colormaps = "$skin_tone_all %skin_tone_4"
 
 # Example 3 color flag using a template svg, colored with a colormap
 [[emoji]]
-name = "flag_lt",
+name = "flag_lt"
 description = "The flag of Lithuania"
 src = "./base_flags/3_equal_horizontal_stripes.svg"
 tags = [ "unicode" ]
