@@ -9,7 +9,7 @@ The builder's manifests are written in [toml](https://toml.io).
 - `$<name>` - Variable name
 - `%` - Colormaps:
     - `%<name>` - Colormap name
-    - `%shortcode` exactly - Colormap shortcode (for example, `:circle-%shortcode:`)
+    - `%shortcode` exactly - Colormap shortcode (for example, `circle%shortcode`)
     - `%codepoint` - Colormap codepoint (for example, skin tone modifiers)
 
 > `<>` denotes a user-defined value, otherwise it is a literal
