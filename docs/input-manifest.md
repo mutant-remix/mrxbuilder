@@ -35,7 +35,8 @@ path = "./another/manifest.toml"
 ### Target
 - `container`: `tgz`, `dir`
 - `output_format`:
-    - Image: `svg`, `png`, `webp`, `avif` + width
+    - Vector images: `svg`
+    - Raster images: `png`, `webp`, `avif` + width
     - Font: `ttf`, `woff2`, `otf`
 - `tags`: Used when calling the builder to select which targets to build.
 
