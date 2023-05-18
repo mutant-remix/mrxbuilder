@@ -13,6 +13,8 @@ There are only a few entry types:
 - [Emoji](#emoji) - Defines an emoji
 
 ## References
+`name`, `shortcode` and `codepoint` are reserved and may not be defined as variable names.
+
 - `#<abcdef>` - RGB hex color
 - `U+<1234>` - Unicode codepoint
 - `$<name>` - Variable name
@@ -22,8 +24,6 @@ There are only a few entry types:
     - `%codepoint` - Colormap codepoint (for example, skin tone modifiers)
 
 > `<>` denotes a user-defined value, otherwise it is a literal (don't include the `<>`)
-
-> `name`, `shortcode` and `codepoint` are reserved and may not be defined as variable names.
 
 ## Entry types
 ### Pack
@@ -94,6 +94,8 @@ Used to define variables for use in other parts of the manifest. The name of the
 
 This is also used for palette definitions.
 
+The `name` of the variable must start with `$`.
+
 ```toml
 # Often repeated codepoints
 [[define]]
@@ -112,17 +114,21 @@ This is also used for palette definitions.
 ```
 
 ### Colormap
+`shortcode` and `codepoint` are only required when an emoji uses those variables
+
+The `name` of the colormap must start with `%`.
+
 ```toml
 # Skin tone modifier
 [[colormap]]
-name = "skin_tone.l1"
+name = "%skin_tone.l1"
 shortcode = "_l1" # light skin tone
 codepoint = "U+1F3FB"
 "$base-1" = "$skin_tone.l1"
 
 # 3-color flag
 [[colormap]]
-name = "flag_lt"
+name = "%flag_lt"
 "$base-1" = "#FDBA0B"
 "$base-2" = "#006A42"
 "$base-3" = "#C22229"
