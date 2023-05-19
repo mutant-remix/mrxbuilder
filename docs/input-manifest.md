@@ -46,19 +46,20 @@ path = "./another/manifest.toml"
 ### Target
 - `output_format`:
     - `format`:
-        - Vector images: `svg`
+        - Vector images: `svg` - skips rasterization
         - Raster images (must also include width in pixels):
             - `png` - intended to only be used for debug builds, as it produces comparably large files (several times faster)
             - `pngc` - png, but compressed using oxipng
-            - `webp` - extremely fast, slightly better compression than `pngc`
+            - `webp` - extremely **fast**, slightly better compression than `pngc`
             - `avif-lossless` - extremely **slow**, slightly better compression than `webp`
-        - Font: `ttf`, `woff2`, `otf`
-    - `container` (not applicable to fonts):
+    - `container`:
         - `tar.gz`
         - `directory`
-    - `filename_schema` (not applicable to fonts):
-        - `shortcode`
-        - `codepoint`
+        - `structure`:
+            - `flat` - true / false - whether to put all emojis in the same directory, or in subdirectories based on their category
+            - `filename`
+                - `shortcode`
+                - `codepoint`
 - `tags`: Used when calling the builder to select which targets to build.
 
 ```toml
@@ -68,7 +69,11 @@ tags = [ "release" ]
 include_tags = [ "unicode", "extra" ]
 output_format = {
     container = "tar.gz",
-    format = [ "png", 128 ]
+    format = [ "png", 128 ],
+    structure = {
+        flat = true,
+        filename = "shortcode",
+    },
 }
 
 [[target]]
@@ -77,15 +82,11 @@ tags = [ "debug", "release" ]
 include_tags = [ "unicode" ]
 output_format = {
     container = "directory",
-    format = [ "svg" ]
-}
-
-[[target]]
-name = "unicode-codepoint-ttf"
-tags = [ "release" ]
-include_tags = [ "unicode" ]
-output_format = {
-    format = [ "ttf" ]
+    format = [ "svg" ],
+    structure = {
+        flat = false,
+        filename = "codepoint",
+    },
 }
 ```
 
