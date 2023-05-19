@@ -55,11 +55,12 @@ path = "./another/manifest.toml"
     - `container`:
         - `tar.gz`
         - `directory`
-        - `structure`:
-            - `flat` - true / false - whether to put all emojis in the same directory, or in subdirectories based on their category
-            - `filename`
-                - `shortcode`
-                - `codepoint`
+    - `structure`:
+        - `flat` - put all emojis in the root
+        - `category` - organise emojis into subdirectories by category
+    - `filenames`
+        - `shortcode`
+        - `codepoint`
 - `tags`: Used when calling the builder to select which targets to build.
 
 ```toml
@@ -70,10 +71,8 @@ include_tags = [ "unicode", "extra" ]
 output_format = {
     container = "tar.gz",
     format = [ "png", 128 ],
-    structure = {
-        flat = true,
-        filename = "shortcode",
-    },
+    structure = "flat"
+    filenames = "shortcode",
 }
 
 [[target]]
@@ -83,10 +82,8 @@ include_tags = [ "unicode" ]
 output_format = {
     container = "directory",
     format = [ "svg" ],
-    structure = {
-        flat = false,
-        filename = "codepoint",
-    },
+    structure = "category",
+    filename = "codepoint",
 }
 ```
 
@@ -150,7 +147,7 @@ name = "%flag_lt"
 # Face
 [[emoji]]
 name = "Grinning face"
-category = "expressions"
+category = [ "expressions", "smileys" ]
 description = "A smiling face with smiling eyes and open mouth."
 src = "./grinning-face.svg"
 tags = [ "unicode" ]
@@ -162,7 +159,7 @@ labels = {
 # Non-unicode "extra" emoji with multiple color variations, with a private use area codepoint
 [[emoji]]
 name = "Human eating a carrot"
-category = "activities"
+category = [ "activities", "food" ]
 description = "A human eating a carrot."
 src = "./eating-carrot.svg"
 tags = [ "extra" ]
@@ -175,7 +172,7 @@ colormaps = "$skin_tone.all %skin_tone.l4" # notice the $ and % distinction
 # Example 3 color flag using a template svg, colored with a colormap
 [[emoji]]
 name = "Lithuania"
-category = "flags"
+category = [ "symbols", "flags" ]
 description = "The flag of Lithuania."
 src = "./base_flags/3_equal_horizontal_stripes.svg"
 tags = [ "unicode" ]
