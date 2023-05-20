@@ -1,0 +1,34 @@
+[pack]
+
+[[include]]
+paths = [
+    "./hands/hands.toml",
+    "./other/other.toml",
+    "./smileys/smileys.toml",
+]
+
+[[include]]
+paths = [
+    "./reusable.toml",
+]
+
+[[target]]
+name = "debug-svg"
+tags = [ "debug" ]
+include_tags = [ "unicode", "extra" ]
+output = { container = "directory", format = "svg" }
+structure = { subdirectories = false, filenames = "shortcode" }
+
+[[target]]
+name = "unicode-codepoint-png-128"
+tags = [ "release" ]
+include_tags = [ "unicode" ]
+format = { container = "tar.gz", format = "png", size = 128 }
+structure = { subdirectories = false, filenames = "codepoint" }
+
+[[target]]
+name = "full-shortcode-webp-512"
+tags = [ "release" ]
+include_tags = [ "unicode", "extra" ]
+output = { container = "tar.gz", format = "webp", size = 512 }
+artifacts = { subdirectories = true, filenames = "shortcode" }

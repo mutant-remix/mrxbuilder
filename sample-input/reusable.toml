@@ -1,0 +1,10 @@
+# Often reused codepoints
+[[define]]
+"$zwj" = "U+200D"
+"$vs16" = "U+FE0F"
+
+# Base colors for colormaps
+[[define]]
+"$base.1" = "#F10DC3"
+"$base.2" = "#A90EB1"
+"$base.3" = "#640082"

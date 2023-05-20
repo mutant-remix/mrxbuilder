@@ -1,0 +1,54 @@
+[[colormap]]
+name = "%hands.red"
+label = " - Red"
+shortcode = "_r"
+"$base.1" = "#cc3030"
+"$base.2" = "#aa3030"
+"$base.3" = "#993030"
+
+[[colormap]]
+name = "%hands.green"
+label = " - Green"
+shortcode = "_g"
+"$base.1" = "#30cc30"
+"$base.2" = "#30aa30"
+"$base.3" = "#309930"
+
+[[define]]
+"$hands.extra" = "%hands.red %hands.green"
+
+[[colormap]]
+name = "%hands.default"
+label = ""
+shortcode = ""
+"$base.1" = "#f1c731"
+"$base.2" = "#a88b22"
+"$base.3" = "#705d17"
+
+[[emoji]]
+src = "./back_of_hand [paw].svg"
+name = "Back of hand (paw)%label"
+category = [ "expressions", "hands", "paw" ]
+description = "something"
+tags = [ "extra" ]
+shortcodes = [ "back_of_hand_paw%shortcode" ]
+colormaps = [ "$hands.extra", "%hands.default" ]
+
+[[emoji]]
+src = "./v [hmn].svg"
+name = "Victory hand (human)%label"
+category = [ "expressions", "hands", "human" ]
+description = "something"
+tags = [ "extra" ]
+shortcodes = [ "victory_hand%shortcode", "v%shortcode" ]
+colormaps = [ "$hands.extra", "%hands.default" ]
+
+[[emoji]]
+src = "./v [hmn].svg"
+name = "Victory hand (human)"
+category = [ "expressions", "hands", "human" ]
+description = "something"
+tags = [ "unicode" ]
+codepoint = [ "U+270C", "$vs16" ]
+shortcodes = [ "victory_hand", "v" ]
+colormaps = [ "%hands.default" ]

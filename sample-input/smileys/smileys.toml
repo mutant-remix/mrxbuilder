@@ -1,0 +1,26 @@
+[[emoji]]
+src = "./embarrassed.svg"
+name = "Embarrassed face"
+category = [ "expressions", "smileys" ]
+description = "something"
+tags = [ "unicode" ]
+codepoint = [ "U+1F633" ]
+shortcodes = [ "embarrassed", "flushed" ]
+
+[[emoji]]
+src = "./upside_down_smile.svg"
+name = "Upside down smile"
+category = [ "expressions", "smileys" ]
+description = "something"
+tags = [ "unicode" ]
+codepoint = [ "U+1F643" ]
+shortcodes = [ "upside_down", "upside_down_face", "upside_down_smile" ]
+
+[[emoji]]
+src = "./yum.svg"
+name = "Face Savoring Food"
+category = [ "expressions", "smileys" ]
+description = "something"
+tags = [ "unicode" ]
+codepoint = [ "U+1F60B" ]
+shortcodes = [ "yum", "face_savoring_food", "tasty" ]
