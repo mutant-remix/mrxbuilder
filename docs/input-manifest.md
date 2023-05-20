@@ -13,15 +13,17 @@ There are only a few entry types:
 - [Emoji](#emoji) - Defines an emoji
 
 ## References
-`name`, `shortcode` and `codepoint` are reserved and may not be defined as variable names.
+`name`, `label`, `shortcode` and `codepoint` are reserved and may not be defined as variable names.
 
 - `#<abcdef>` - RGB hex color
 - `U+<1234>` - Unicode codepoint
 - `$<name>` - Variable name
 - `%` - Colormaps:
     - `%<name>` - Colormap name
+    - `%label` - Colormap label (for example, skin tone modifiers)
     - `%shortcode` exactly - Colormap shortcode (for example, `circle%shortcode`)
     - `%codepoint` - Colormap codepoint (for example, skin tone modifiers)
+    - `%<a>&$<b>` - Used to only add `$b` if `%a` exists
 
 > `<>` denotes a user-defined value, otherwise it is a literal (don't include the `<>`)
 
@@ -131,7 +133,7 @@ name = "%flag_lt"
 - `shortcodes`: list of shortcodes
 - `tags`: used in targets to select which emojis to include in that target
 - `src`: path to the svg file, relative to the manifest file
-- `colormaps` create multiple emoji entries, one for each colormap. `%shortcode` and `%codepoint` will be replaced with the colormap's shortcode and codepoint respectively, and the svg will be recolored with the colormap's entries
+- `colormaps` create multiple emoji entries, one for each colormap. `%label`, `%shortcode` and `%codepoint` will be replaced, and the svg will be recolored with the colormap's entries. `%label&$pua` can be used to only add `$pua` if the label is not empty.
 
 > If emojis have overlapping tags, they can't have overlapping names and labels
 
