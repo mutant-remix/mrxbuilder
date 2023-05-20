@@ -2,6 +2,7 @@
 name = "%hands.red"
 label = " - Red"
 shortcode = "_r"
+codepoint = [ "U+1F7E5" ] # red square
 "$base.1" = "#cc3030"
 "$base.2" = "#aa3030"
 "$base.3" = "#993030"
@@ -10,6 +11,7 @@ shortcode = "_r"
 name = "%hands.green"
 label = " - Green"
 shortcode = "_g"
+codepoint = [ "U+1F7E2" ] # green square
 "$base.1" = "#30cc30"
 "$base.2" = "#30aa30"
 "$base.3" = "#309930"
@@ -21,6 +23,7 @@ shortcode = "_g"
 name = "%hands.default"
 label = ""
 shortcode = ""
+codepoint = []
 "$base.1" = "#f1c731"
 "$base.2" = "#a88b22"
 "$base.3" = "#705d17"
@@ -41,6 +44,7 @@ category = [ "expressions", "hands", "human" ]
 description = "something"
 tags = [ "extra" ]
 shortcodes = [ "victory_hand%shortcode", "v%shortcode" ]
+codepoint = [ "%codepoint&$pua", "U+270C", "$zwj", "%codepoint" ]
 colormaps = [ "$hands.extra", "%hands.default" ]
 
 [[emoji]]

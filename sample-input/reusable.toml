@@ -2,6 +2,7 @@
 [[define]]
 "$zwj" = "U+200D"
 "$vs16" = "U+FE0F"
+"$pua" = "U+E000"
 
 # Base colors for colormaps
 [[define]]
