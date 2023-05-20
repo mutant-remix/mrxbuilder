@@ -37,54 +37,46 @@ The builder only directly loads a single manifest file, typically called `index.
 
 ```toml
 [[include]]
-path = "./other/manifest.toml"
-
-[[include]]
-path = "./another/manifest.toml"
+paths = [
+    "./other/manifest.toml",
+    "./another/manifest.toml",
+]
 ```
 
 ### Target
-- `output_format`:
+- `tags`: Used when calling the builder to select which targets to build.
+- `output`:
+    - `container`
+        - `tar.gz`
+        - `directory`
     - `format`:
         - Vector images: `svg` - skips rasterization
-        - Raster images (must also include width in pixels):
+        - Raster images:
             - `png` - intended to only be used for debug builds, as it produces comparably large files (several times faster)
             - `pngc` - png, but compressed using oxipng
             - `webp` - extremely **fast**, slightly better compression than `pngc`
             - `avif-lossless` - extremely **slow**, slightly better compression than `webp`
-    - `container`:
-        - `tar.gz`
-        - `directory`
-    - `structure`:
-        - `flat` - put all emojis in the root
-        - `category` - organise emojis into subdirectories by category
+    - `size` (number) - only for raster images
+- `structure`
+    - `subdirectories` (bool)
     - `filenames`
         - `shortcode`
         - `codepoint`
-- `tags`: Used when calling the builder to select which targets to build.
 
 ```toml
 [[target]]
 name = "full-shortcode-png-128"
 tags = [ "release" ]
 include_tags = [ "unicode", "extra" ]
-output_format = {
-    container = "tar.gz",
-    format = [ "png", 128 ],
-    structure = "flat"
-    filenames = "shortcode",
-}
+output = { container = "tar.gz", format = "png", size = 128 }
+structure = { subdirectories = true, filenames = "shortcode" }
 
 [[target]]
 name = "unicode-codepoint-svg"
 tags = [ "debug", "release" ]
 include_tags = [ "unicode" ]
-output_format = {
-    container = "directory",
-    format = [ "svg" ],
-    structure = "category",
-    filename = "codepoint",
-}
+output = { container = "directory", format = "svg" }
+structure = { subdirectories = false, filenames = "codepoint" }
 ```
 
 ### Define
@@ -120,65 +112,61 @@ The `name` of the colormap must start with `%`.
 # Skin tone modifier
 [[colormap]]
 name = "%skin_tone.l1"
-shortcode = "_l1" # light skin tone
+label = " - Light 1"
+shortcode = "_l1"
 codepoint = "U+1F3FB"
-"$base-1" = "$skin_tone.l1"
+"$base.1" = "$skin_tone.l1"
 
 # 3-color flag
 [[colormap]]
 name = "%flag_lt"
-"$base-1" = "#FDBA0B"
-"$base-2" = "#006A42"
-"$base-3" = "#C22229"
+"$base.1" = "#FDBA0B"
+"$base.2" = "#006A42"
+"$base.3" = "#C22229"
 ```
 
 ### Emoji
 - `name`, `description`, `category` - used for metadata
-- `labels`: used for metadata
-    - `codepoint`: single codepoint split into parts
-    - `shortcodes`: list of shortcodes
+- `codepoint`: single codepoint split into parts
+- `shortcodes`: list of shortcodes
 - `tags`: used in targets to select which emojis to include in that target
 - `src`: path to the svg file, relative to the manifest file
 - `colormaps` create multiple emoji entries, one for each colormap. `%shortcode` and `%codepoint` will be replaced with the colormap's shortcode and codepoint respectively, and the svg will be recolored with the colormap's entries
 
 > If emojis have overlapping tags, they can't have overlapping names and labels
 
+> If an emoji has multiple colormaps, `name`, `shortcodes` and `codepoint` must use variables
+
 ```toml
 # Face
 [[emoji]]
+src = "./grinning-face.svg"
 name = "Grinning face"
 category = [ "expressions", "smileys" ]
 description = "A smiling face with smiling eyes and open mouth."
-src = "./grinning-face.svg"
 tags = [ "unicode" ]
-labels = {
-    codepoint = [ "U+1F600" ],
-    shortcodes = [ "grinning" ]
-}
+codepoint = [ "U+1F600" ]
+shortcodes = [ "grinning" ]
 
 # Non-unicode "extra" emoji with multiple color variations, with a private use area codepoint
 [[emoji]]
-name = "Human eating a carrot"
+src = "./eating-carrot.svg"
+name = "Human eating a carrot%label"
 category = [ "activities", "food" ]
 description = "A human eating a carrot."
-src = "./eating-carrot.svg"
 tags = [ "extra" ]
-labels = {
-    codepoint = [ "$pua", "U+1234", "%codepoint" ],
-    shortcodes = [ "human_eating_carrot%shortcode" ]
-}
+codepoint = [ "$pua", "U+1234", "%codepoint" ]
+shortcodes = [ "human_eating_carrot%shortcode" ]
 colormaps = "$skin_tone.all %skin_tone.l4" # notice the $ and % distinction
 
 # Example 3 color flag using a template svg, colored with a colormap
 [[emoji]]
+src = "./base_flags/3_equal_horizontal_stripes.svg"
 name = "Lithuania"
 category = [ "symbols", "flags" ]
 description = "The flag of Lithuania."
-src = "./base_flags/3_equal_horizontal_stripes.svg"
 tags = [ "unicode" ]
-labels = {
-    codepoint = [ "U+1F1F1", "U+1F1F9" ],
-    shortcodes = [ "flag_lt", "flag_lithuania", "lithuania" ]
-}
+codepoint = [ "U+1F1F1", "U+1F1F9" ]
+shortcodes = [ "flag_lt", "flag_lithuania", "lithuania" ]
 colormaps = "%flag_lt"
 ```
