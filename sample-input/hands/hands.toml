@@ -1,5 +1,5 @@
 [[colormap]]
-name = "%hands.red"
+name = "%skintones.red"
 label = " - Red"
 shortcode = "_r"
 codepoint = [ "U+1F7E5" ] # red square
@@ -8,7 +8,7 @@ codepoint = [ "U+1F7E5" ] # red square
 "$base.3" = "#993030"
 
 [[colormap]]
-name = "%hands.green"
+name = "%skintones.green"
 label = " - Green"
 shortcode = "_g"
 codepoint = [ "U+1F7E2" ] # green square
@@ -17,13 +17,12 @@ codepoint = [ "U+1F7E2" ] # green square
 "$base.3" = "#309930"
 
 [[define]]
-"$hands.extra" = "%hands.red %hands.green"
+"$skintones.extra" = "%skintones.red %skintones.green"
 
 [[colormap]]
-name = "%hands.default"
+name = "%skintones.default"
 label = ""
 shortcode = ""
-codepoint = []
 "$base.1" = "#f1c731"
 "$base.2" = "#a88b22"
 "$base.3" = "#705d17"
@@ -31,28 +30,28 @@ codepoint = []
 [[emoji]]
 src = "./back_of_hand [paw].svg"
 name = "Back of hand (paw)%label"
-category = [ "expressions", "hands", "paw" ]
+category = [ "expressions", "skintones", "paw" ]
 description = "something"
 tags = [ "extra" ]
 shortcodes = [ "back_of_hand_paw%shortcode" ]
-colormaps = [ "$hands.extra", "%hands.default" ]
+colormaps = [ "$skintones.extra", "%skintones.default" ]
 
 [[emoji]]
 src = "./v [hmn].svg"
 name = "Victory hand (human)%label"
-category = [ "expressions", "hands", "human" ]
+category = [ "expressions", "skintones", "human" ]
 description = "something"
 tags = [ "extra" ]
 shortcodes = [ "victory_hand%shortcode", "v%shortcode" ]
-codepoint = [ "%codepoint&$pua", "U+270C", "$zwj", "%codepoint" ]
-colormaps = [ "$hands.extra", "%hands.default" ]
+codepoint = [ "U+270C", "$zwj", "%codepoint" ]
+colormaps = [ "$skintones.extra" ]
 
 [[emoji]]
 src = "./v [hmn].svg"
 name = "Victory hand (human)"
-category = [ "expressions", "hands", "human" ]
+category = [ "expressions", "skintones", "human" ]
 description = "something"
 tags = [ "unicode" ]
 codepoint = [ "U+270C", "$vs16" ]
 shortcodes = [ "victory_hand", "v" ]
-colormaps = [ "%hands.default" ]
+colormaps = [ "%skintones.default" ]

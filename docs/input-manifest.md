@@ -1,6 +1,9 @@
 # Manifest
 This is the specification for the builder's input manifest files, which also acts as the documentation for writing them. It is example-based and hopefully self-explanatory in most cases.
 
+## Examples
+You can find examples utilising every feature in [sample-input](/sample-input) and below.
+
 ## Overview
 The builder's manifests are written in [toml](https://toml.io).
 
@@ -23,7 +26,6 @@ There are only a few entry types:
     - `%label` - Colormap label (for example, skin tone modifiers)
     - `%shortcode` exactly - Colormap shortcode (for example, `circle%shortcode`)
     - `%codepoint` - Colormap codepoint (for example, skin tone modifiers)
-    - `%<a>&$<b>` - Used to only add `$b` if `%a` exists
 
 > `<>` denotes a user-defined value, otherwise it is a literal (don't include the `<>`)
 
@@ -54,11 +56,16 @@ paths = [
     - `format`:
         - Vector images: `svg` - skips rasterization
         - Raster images:
-            - `png` - intended to only be used for debug builds, as it produces comparably large files (several times faster)
-            - `pngc` - png, but compressed using oxipng
-            - `webp` - extremely **fast**, slightly better compression than `pngc`
-            - `avif-lossless` - extremely **slow**, slightly better compression than `webp`
+            Format name | Compression levels | Compatibility | Notes
+            --- | --- | --- | ---
+            `png` | n/a | Best | Intended for debug builds only, really fast
+            `png-mtpng` | 0-3 | Best | Multi-threaded
+            `png-oxipng-zopfli` | 0-15 | Best | Single-threaded, (**recommended for very small images**)
+            `png-oxipng-libdeflate` | 0-12 | Best | Single-threaded (**recommended**)
+            `webp` | n/a | Modern browsers | (**recommended**)
+            `avif-lossy` | 100.0-0.0 | Bad | At high quality levels, it is not perceptibly lossy
     - `size` (number) - only for raster images
+    - `compression` (number) - for applicable formats
 - `structure`
     - `subdirectories` (bool)
     - `filenames`
