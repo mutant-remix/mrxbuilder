@@ -4,11 +4,16 @@ use mtpng::{
     ColorType, Header, CompressionLevel
 };
 
-pub fn encode(rgba: &RgbaImage) -> Vec<u8> {
+pub fn encode(rgba: &RgbaImage, compression: u8) -> Vec<u8> {
     let mut buffer = Vec::new();
 
     let mut options = Options::new();
-    options.set_compression_level(CompressionLevel::High).unwrap();
+    options.set_compression_level(match compression {
+        0 => CompressionLevel::Fast,
+        1 => CompressionLevel::Default,
+        2 => CompressionLevel::High,
+        _ => panic!("Invalid compression level for png-mtpng"),
+    }).unwrap();
 
     let mut encoder = Encoder::new(&mut buffer, &options);
 

@@ -52,6 +52,7 @@ paths = [
 - `output`:
     - `container`
         - `tar.gz`
+        - `zip`
         - `directory`
     - `format`:
         - Vector images: `svg` - skips rasterization
@@ -59,9 +60,9 @@ paths = [
             Format name | Compression levels | Compatibility | Notes
             --- | --- | --- | ---
             `png` | n/a | Best | Intended for debug builds only, really fast
-            `png-mtpng` | 0-3 | Best | Multi-threaded
-            `png-oxipng-zopfli` | 0-15 | Best | Single-threaded, (**recommended for very small images**)
-            `png-oxipng-libdeflate` | 0-12 | Best | Single-threaded (**recommended**)
+            `png-mtpng` | 0.0-3.0 | Best | Multi-threaded
+            `png-oxipng-zopfli` | 0.0-15.0 | Best | Single-threaded, (**recommended for very small images**)
+            `png-oxipng-libdeflater` | 0.0-12.0 | Best | Single-threaded (**recommended**)
             `webp` | n/a | Modern browsers | (**recommended**)
             `avif-lossy` | 100.0-0.0 | Bad | At high quality levels, it is not perceptibly lossy
     - `size` (number) - only for raster images
@@ -77,15 +78,15 @@ paths = [
 name = "full-shortcode-png-128"
 tags = [ "release" ]
 include_tags = [ "unicode", "extra" ]
-output = { container = "tar.gz", format = "png", size = 128 }
-structure = { subdirectories = true, filenames = "shortcode" }
+output = { format = "png-oxipng-libdeflate", size = 128, compression = 12.0 }
+structure = { container = "tar.gz", subdirectories = true, filenames = "shortcode" }
 
 [[target]]
 name = "unicode-codepoint-svg"
 tags = [ "debug", "release" ]
 include_tags = [ "unicode" ]
-output = { container = "directory", format = "svg" }
-structure = { subdirectories = false, filenames = "codepoint" }
+output = { format = "svg" }
+structure = { container = "directory", subdirectories = false, filenames = "codepoint" }
 ```
 
 ### Define
@@ -113,7 +114,7 @@ The `name` of the variable must start with `$`.
 ```
 
 ### Colormap
-`shortcode` and `codepoint` are only required when an emoji uses those variables
+`label`, `shortcode` and `codepoint` are only required when an emoji uses those variables
 
 The `name` of the colormap must start with `%`.
 

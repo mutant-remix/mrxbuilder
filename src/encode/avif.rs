@@ -2,8 +2,8 @@ use image::RgbaImage;
 use ravif::{Encoder, Img, RGBA8};
 use std::mem::transmute;
 
-pub fn encode(rgba: &RgbaImage) -> Vec<u8> {
-    let encoder = Encoder::new().with_quality(80.0).with_speed(4);
+pub fn encode(rgba: &RgbaImage, quality: f32, speed: u8) -> Vec<u8> {
+    let encoder = Encoder::new().with_quality(quality).with_speed(speed);
 
     let img = Img::new(
         unsafe {
