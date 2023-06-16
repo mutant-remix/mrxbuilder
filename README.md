@@ -1,19 +1,26 @@
-# Mutant Remix builder
+# mrxbuilder
 
 **Work in progress!**
 
-Builder for the Mutant Remix emoji pack. Designed to be a fast, flexible and easy to use replacement for orxporter.
+mrxbuilder (Mutant Remix builder) is an emoji pack build tool. Takes in a manifest file and SVGs and outputs a pack in various formats.
 
-## Usage
+- Completely **emoji pack agnostic** with no hard-coded assumptions
+- Fast and multithreaded, no temporary files are written to disk
+- No runtime depdendencies
+- Really simple to run with only 3 arguments
+
 Check out the [docs](./docs/README.md) for more information.
 
-## Benefits over orxporter
-- About 15 times faster
-- Completely **emoji pack agnostic** with no hard-coded assumptions
-- No runtime depdendencies
-- Neater metadata format written in toml
-> A semi-feature-complete conversion tool is provided to convert from orxporter metadata to builder metadata
-- Simple commands to run it, as opposed to complex scripts
+## Features
+- Recolors emojis using colormaps to avoid repeating SVGs with different colors
+- Supports building to `svg`, `png`, `avif` and `webp` formats with various compression methods
+- Outputs artifacts in `tar.gz`, `zip` or a directory
+- Output metadata is generated in JSON
+
+## Metadata
+- Input metadata is written in a simple, human-readable format using [toml](https://toml.io)
+> Read more about the metadata formats in the [docs](./docs/README.md)
+- Build targets can be pre-defined in the manifest, and selected for building using tags
 
 ## License
 Licensed under [AGPLv3](./LICENSE)
