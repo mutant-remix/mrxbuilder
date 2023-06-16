@@ -31,3 +31,10 @@ tags = [ "release" ]
 include_tags = [ "unicode", "extra" ]
 output = { format = "webp", size = 512 }
 structure = { container = "tar.gz", subdirectories = true, filenames = "shortcode" }
+
+[[target]]
+name = "full-metadata"
+tags = [ "debug", "metadata" ]
+include_tags = [ "unicode", "extra" ]
+output = { format = "none" }
+structure = { container = "directory", subdirectories = false, filenames = "shortcode" }
