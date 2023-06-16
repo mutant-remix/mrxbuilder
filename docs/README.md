@@ -1,3 +1,3 @@
-- [Usage](./usage.md) - how to use the builder from the command line
-- [Input manifest](./input-manifest.md) - `toml` manifest used to define the emojis and targets
-- [Output manifest](./output-manifest.md) - `json` metadata format
+- [Usage](./usage.md) - how to compile and/or run the builder from the command line
+- [Input manifest](./input-manifest.md) - `toml` manifest used to define the emojis, targets etc.
+- [Output metadata](./output-metadata.md) - `json` metadata format

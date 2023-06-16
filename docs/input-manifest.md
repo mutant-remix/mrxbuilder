@@ -55,6 +55,7 @@ paths = [
         - `zip`
         - `directory`
     - `format`:
+        - No images: `none` - used for metadata-only targets
         - Vector images: `svg` - skips rasterization
         - Raster images:
             Format name | Compression levels | Compatibility | Notes
@@ -78,7 +79,7 @@ paths = [
 name = "full-shortcode-png-128"
 tags = [ "release" ]
 include_tags = [ "unicode", "extra" ]
-output = { format = "png-oxipng-libdeflate", size = 128, compression = 12.0 }
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
 structure = { container = "tar.gz", subdirectories = true, filenames = "shortcode" }
 
 [[target]]
@@ -87,6 +88,13 @@ tags = [ "debug", "release" ]
 include_tags = [ "unicode" ]
 output = { format = "svg" }
 structure = { container = "directory", subdirectories = false, filenames = "codepoint" }
+
+[[target]]
+name = "full-metadata"
+tags = [ "metadata" ]
+include_tags = [ "unicode", "extra" ]
+output = { format = "none" }
+structure = { container = "directory", subdirectories = false, filenames = "shortcode" }
 ```
 
 ### Define
@@ -95,6 +103,12 @@ Used to define variables for use in other parts of the manifest. The name of the
 This is also used for palette definitions.
 
 The `name` of the variable must start with `$`.
+
+`$` variables will only get resolved in:
+- `colormap` entry keys and values
+- `colormap.codeoint`
+- `emoji.codepoint`
+- `emoji.colormaps`
 
 ```toml
 # Often repeated codepoints
@@ -141,7 +155,7 @@ name = "%flag_lt"
 - `shortcodes`: list of shortcodes
 - `tags`: used in targets to select which emojis to include in that target
 - `src`: path to the svg file, relative to the manifest file
-- `colormaps` create multiple emoji entries, one for each colormap. `%label`, `%shortcode` and `%codepoint` will be replaced, and the svg will be recolored with the colormap's entries. `%label&$pua` can be used to only add `$pua` if the label is not empty.
+- `colormaps` create multiple emoji entries, one for each colormap. `%label`, `%shortcode` and `%codepoint` will be replaced, and the svg will be recolored with the colormap's entries.
 
 > If emojis have overlapping tags, they can't have overlapping names and labels
 
@@ -167,7 +181,7 @@ description = "A human eating a carrot."
 tags = [ "extra" ]
 codepoint = [ "$pua", "U+1234", "%codepoint" ]
 shortcodes = [ "human_eating_carrot%shortcode" ]
-colormaps = "$skin_tone.all %skin_tone.l4" # notice the $ and % distinction
+colormaps = [ "$skin_tone.all", "%skin_tone.l4" ] # notice the $ and % distinction
 
 # Example 3 color flag using a template svg, colored with a colormap
 [[emoji]]
@@ -178,5 +192,5 @@ description = "The flag of Lithuania."
 tags = [ "unicode" ]
 codepoint = [ "U+1F1F1", "U+1F1F9" ]
 shortcodes = [ "flag_lt", "flag_lithuania", "lithuania" ]
-colormaps = "%flag_lt"
+colormaps = [ "%flag_lt" ]
 ```
