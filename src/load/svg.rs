@@ -25,9 +25,10 @@ impl SvgTree {
         }
     }
 
-    pub fn replace_colors() {
-
-    }
+    // pub fn replace_colors(&mut self, map: ) {
+    //     let mut new_tree = self.0.clone();
+    //     self.0 = new_tree;
+    // }
 }
 
 impl Pack {

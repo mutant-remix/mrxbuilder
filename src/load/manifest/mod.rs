@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
-use crate::encode::{EncodeTarget, OxiPngMode};
+use crate::process::{EncodeTarget, OxiPngMode};
 use crate::load::{Pack, svg::SvgTree};
 
 #[derive(Debug)]
@@ -496,21 +496,6 @@ impl Pack {
                                     "png" => OutputFormat::Raster {
                                         format: EncodeTarget::PngImage,
                                         size: size.unwrap() as u32,
-                                    },
-                                    "png-mtpng" => {
-                                        match compression {
-                                            Some(compression) => {
-                                                if compression > 2.0 {
-                                                    panic!("Target uses 'png-mtpng', but contains 'output.compression' '{}' (must be 0-2) in {:?}", compression, manifest_path);
-                                                }
-
-                                                OutputFormat::Raster {
-                                                    format: EncodeTarget::PngMtpng(compression as u8),
-                                                    size: size.unwrap() as u32,
-                                                }
-                                            },
-                                            None => panic!("Target uses 'png-mtpng', but doesn't specify 'output.compression' in {:?}", manifest_path),
-                                        }
                                     },
                                     "png-oxipng-zopfli" => {
                                         match compression {

@@ -6,7 +6,7 @@ mod variable;
 mod manifest;
 use manifest::{Colormap, Emoji, Target};
 
-mod svg;
+pub mod svg;
 
 #[derive(Debug)]
 pub struct Pack {

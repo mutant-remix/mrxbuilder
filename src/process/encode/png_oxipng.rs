@@ -1,7 +1,6 @@
 use image::{codecs::png::PngEncoder, ImageEncoder, RgbaImage};
 use oxipng::{optimize_from_memory, Options, Deflaters};
 
-
 pub fn encode(rgba: &RgbaImage, deflater: Deflaters) -> Vec<u8> {
     let mut buffer = Vec::new();
 

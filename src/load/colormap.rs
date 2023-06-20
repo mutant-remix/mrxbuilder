@@ -23,6 +23,32 @@ impl Pack {
                         emoji.name = emoji.name.replace("%label", label);
                     }
 
+                    for shortcode in &mut emoji.shortcodes {
+                        if shortcode.contains("%shortcode") {
+                            let colormap_shortcode = match &colormap.shortcode {
+                                Some(colormap_shortcode) => colormap_shortcode,
+                                None => panic!("Emoji '{}' uses %shortcode, but colormap '{}' does not have a shortcode ", emoji.name, colormap_name),
+                            };
+
+                            *shortcode = shortcode.replace("%shortcode", colormap_shortcode);
+                        }
+                    }
+
+                    if let Some(codepoint) = &mut emoji.codepoint {
+                        for codepoint in codepoint.iter_mut() {
+                            if codepoint == "%codepoint" {
+                                let colormap_codepoint = match &colormap.codepoint {
+                                    Some(colormap_codepoint) => colormap_codepoint,
+                                    None => panic!("Emoji '{}' uses %codepoint, but colormap '{}' does not have a codepoint ", emoji.name, colormap_name),
+                                };
+
+                                *codepoint = colormap_codepoint.clone().to_string();
+                            }
+                        }
+                    }
+
+                    emoji.colormaps.clear();
+
                     new_emojis.push(emoji);
                 }
             } else {

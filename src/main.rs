@@ -1,11 +1,9 @@
 mod load;
-mod rasterize;
-mod encode;
+mod process;
 
 use load::Pack;
 
 use std::path::PathBuf;
-
 fn main() {
     let mut pack = Pack::new();
 
