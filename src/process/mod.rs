@@ -27,8 +27,19 @@ pub enum EncodeTarget {
     Webp,
 }
 
+impl EncodeTarget {
+    pub fn to_extension(&self) -> &'static str {
+        match self {
+            EncodeTarget::PngImage => "png",
+            EncodeTarget::PngOxipng(_) => "png",
+            EncodeTarget::Avif { .. } => "avif",
+            EncodeTarget::Webp => "webp",
+        }
+    }
+}
+
 pub fn encode_svg(svg: &SvgTree, size: u32, target: EncodeTarget) -> Vec<u8> {
-    let svg = clean::clean_svg(svg);
+    let svg = clean_svg(svg);
     let raster = rasterise_svg(&svg.0, size);
 
     match target {
