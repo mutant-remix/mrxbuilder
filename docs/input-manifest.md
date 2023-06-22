@@ -60,8 +60,8 @@ paths = [
         - Raster images:
             Format name | Compression levels | Size | Compatibility | Notes
             --- | --- | --- | --- | ---
-            `png` | n/a | Huge | Best | Intended for quick builds
-            `png-oxipng-zopfli` | 0.0-15.0 | Tiny | Best | **recommended for very small images**
+            `png-image` | n/a | Huge | Best | Intended for quick builds
+            `png-oxipng-zopfli` | 0.0-15.0 | Tiny | Best | **recommended for very low resolutions**
             `png-oxipng-libdeflater` | 0.0-12.0 | Small | Best | **recommended**
             `webp` | n/a | Small | Modern browsers | **recommended**
             `avif-lossy` | 100.0-0.0 | Small | Bad | At high quality levels, it is not perceptibly lossy

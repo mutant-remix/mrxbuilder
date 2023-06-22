@@ -493,7 +493,7 @@ impl Pack {
                                 Some(format) => match format.as_str().unwrap() {
                                     "none" => OutputFormat::None,
                                     "svg" => OutputFormat::Svg,
-                                    "png" => OutputFormat::Raster {
+                                    "png-image" => OutputFormat::Raster {
                                         format: EncodeTarget::PngImage,
                                         size: size.unwrap() as u32,
                                     },
