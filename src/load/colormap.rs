@@ -1,4 +1,16 @@
 use crate::load::{Pack, Emoji};
+use image::Rgb;
+use std::collections::HashMap;
+
+fn parse_hex_str(hex_str: &str) -> Rgb<u8> {
+    let hex_str = hex_str.trim_start_matches("#");
+
+    let r = u8::from_str_radix(&hex_str[0..2], 16).unwrap();
+    let g = u8::from_str_radix(&hex_str[2..4], 16).unwrap();
+    let b = u8::from_str_radix(&hex_str[4..6], 16).unwrap();
+
+    Rgb([r, g, b])
+}
 
 impl Pack {
     pub fn resolve_colormaps(&mut self) {
@@ -45,6 +57,31 @@ impl Pack {
                                 *codepoint = colormap_codepoint.clone().to_string();
                             }
                         }
+                    }
+
+                    if emoji.description.contains("%description") {
+                        let colormap_description = match &colormap.description {
+                            Some(colormap_description) => colormap_description,
+                            None => panic!("Emoji '{}' uses %description, but colormap '{}' does not have a description ", emoji.name, colormap_name),
+                        };
+
+                        emoji.description = emoji.description.replace("%description", colormap_description);
+                    }
+
+                    emoji.colormap_entries = HashMap::new();
+                    for (key, value) in &colormap.entries {
+                        if !key.starts_with("#") {
+                            panic!("Colormap '{}' has an invalid source color '{}'", colormap_name, key);
+                        }
+
+                        if !value.starts_with("#") {
+                            panic!("Colormap '{}' has an invalid target color '{}'", colormap_name, value);
+                        }
+
+                        let source = parse_hex_str(&key);
+                        let target = parse_hex_str(&value);
+
+                        emoji.colormap_entries.insert(source, target);
                     }
 
                     emoji.colormaps.clear();

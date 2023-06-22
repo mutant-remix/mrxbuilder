@@ -143,6 +143,8 @@ codepoint = "U+1F3FB"
 # 3-color flag
 [[colormap]]
 name = "%flag_lt"
+label = "Lithuania"
+description = "The flag of Lithuania"
 "$base.1" = "#FDBA0B"
 "$base.2" = "#006A42"
 "$base.3" = "#C22229"
@@ -154,7 +156,7 @@ name = "%flag_lt"
 - `shortcodes`: list of shortcodes
 - `tags`: used in targets to select which emojis to include in that target
 - `src`: path to the svg file, relative to the manifest file
-- `colormaps` create multiple emoji entries, one for each colormap. `%label`, `%shortcode` and `%codepoint` will be replaced, and the svg will be recolored with the colormap's entries.
+- `colormaps` create multiple emoji entries, one for each colormap. `%label`, `%shortcode`, `%codepoint`, `%description` will be replaced, and the svg will be recolored with the colormap's entries.
 
 > If emojis have overlapping tags, they can't have overlapping names and labels
 
@@ -185,9 +187,9 @@ colormaps = [ "$skin_tone.all", "%skin_tone.l4" ] # notice the $ and % distincti
 # Example 3 color flag using a template svg, colored with a colormap
 [[emoji]]
 src = "./base_flags/3_equal_horizontal_stripes.svg"
-name = "Lithuania"
+name = "%label"
 category = [ "symbols", "flags" ]
-description = "The flag of Lithuania."
+description = "%description"
 tags = [ "unicode" ]
 codepoint = [ "U+1F1F1", "U+1F1F9" ]
 shortcodes = [ "flag_lt", "flag_lithuania", "lithuania" ]
