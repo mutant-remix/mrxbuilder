@@ -40,45 +40,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Install build dependencies for windows
-        if: matrix.target[0] == 'x86_64-pc-windows-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            gcc-mingw-w64-x86-64 \
-            binutils-mingw-w64-x86-64 \
-            mingw-w64-tools \
-            mingw-w64-common \
-            mingw-w64-x86-64-dev \
-            mingw-w64-i686-dev
-
-      - name: Install build dependencies for musl and aarch64
-        if: matrix.target[0] == 'x86_64-unknown-linux-musl' || matrix.target[0] == 'aarch64-unknown-linux-musl'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            musl-tools \
-            musl-dev \
-            musl \
-            musl-dev \
-            musl-tools \
-            musl-cross \
-            musl-cross-make \
-            musl-cross-dev \
-            musl-cross-binutils \
-            musl-cross-headers \
-            musl-cross-x86_64 \
-            musl-cross-arm-linux-musleabi \
-
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+      - name: Install cross
+        uses: baptiste0928/cargo-install@v2
         with:
-          toolchain: stable
-          target: ${{ matrix.target[0] }}
-          override: true
+          crate: cross
 
       - name: Build for ${{ matrix.target }}
-        run: cargo build --release --target ${{ matrix.target[0] }}
+        run: cross build --release --target ${{ matrix.target[0] }}
 
       - name: Prepare directories
         run: |
