@@ -1,4 +1,5 @@
 use std::{collections::HashMap, fs, path::PathBuf};
+use image::Rgb;
 
 use crate::process::{EncodeTarget, OxiPngMode};
 use crate::load::{Pack, svg::SvgTree};
@@ -44,14 +45,8 @@ pub struct Colormap {
     pub label: Option<String>,
     pub shortcode: Option<String>,
     pub codepoint: Option<String>,
+    pub description: Option<String>,
     pub entries: HashMap<String, String>,
-}
-
-#[derive(Debug, Hash, Copy, Clone)]
-pub struct RGB {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
 }
 
 #[derive(Debug, Clone)]
@@ -65,19 +60,19 @@ pub struct Emoji {
     pub codepoint: Option<Vec<String>>,
     pub shortcodes: Vec<String>,
     pub colormaps: Vec<String>,
-    pub colormap_entries: HashMap<RGB, RGB>,
+    pub colormap_entries: HashMap<Rgb<u8>, Rgb<u8>>,
 }
 
 impl Pack {
     fn load_manifest(path: &PathBuf) -> toml::Value {
         let toml = match fs::read_to_string(path) {
             Ok(manifest) => manifest,
-            Err(e) => panic!("Error reading manifest file: {}", e),
+            Err(err) => panic!("Error reading manifest file: {}", err),
         };
 
         match toml::from_str(&toml) {
             Ok(manifest) => manifest,
-            Err(e) => panic!("Error parsing manifest file: {}", e),
+            Err(err) => panic!("Error parsing manifest file: {}", err),
         }
     }
 
@@ -159,6 +154,7 @@ impl Pack {
                     let mut label: Option<String> = None;
                     let mut shortcode: Option<String> = None;
                     let mut codepoint: Option<String> = None;
+                    let mut description: Option<String> = None;
 
                     let mut entries = HashMap::new();
 
@@ -192,6 +188,15 @@ impl Pack {
                                     ),
                                 }
                             }
+                            "description" => {
+                                description = match value.as_str() {
+                                    Some(description) => Some(description.to_string()),
+                                    None => panic!(
+                                        "Colormap description is not a string in {:?}",
+                                        manifest_path
+                                    ),
+                                }
+                            }
                             _ => {
                                 let value = match value.as_str() {
                                     Some(value) => value,
@@ -211,6 +216,7 @@ impl Pack {
                             label,
                             shortcode,
                             codepoint,
+                            description,
                             entries,
                         },
                     );
@@ -309,23 +315,25 @@ impl Pack {
                         None => None,
                     };
 
-                    let shortcodes: Vec<String> = match emoji.get("shortcode") {
+                    let shortcodes: Vec<String> = match emoji.get("shortcodes") {
                         Some(shortcode) => shortcode
                             .as_array()
                             .expect(&format!(
-                                "Emoji 'shortcode' is not an array in {:?}",
+                                "Emoji 'shortcodes' is not an array in {:?}",
                                 manifest_path
                             ))
                             .iter()
                             .map(|s| match s.as_str() {
                                 Some(s) => s.to_string(),
                                 None => {
-                                    panic!("Emoji shortcode is not a string in {:?}", manifest_path)
+                                    panic!("Emoji contains invalid shortcode (must be a string) in {:?}", manifest_path)
                                 }
                             })
                             .collect(),
                         None => vec![],
                     };
+
+                    println!("shortcodes: {:?}", shortcodes);
 
                     let colormaps: Vec<String> = match emoji.get("colormaps") {
                         Some(colormaps) => colormaps
