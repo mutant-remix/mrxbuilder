@@ -14,12 +14,15 @@ jobs:
 
     strategy:
       matrix:
+        # [ target, name, extension ]
         target: [
           [ "x86_64-pc-windows-gnu", "x86_64-windows", ".exe",],
-          [ "x86_64-apple-darwin", "x86_64-macos", "" ],
-          [ "aarch64-apple-darwin", "arm64-macos", "" ],
-          [ "x86_64-unknown-linux-musl", "x86_64-linux-musl", "" ],
-          [ "aarch64-unknown-linux-musl", "arm64-linux-musl", "" ],
+          # [ "x86_64-apple-darwin", "x86_64-macos", "" ],
+          # [ "aarch64-apple-darwin", "arm64-macos", "" ],
+          # [ "x86_64-unknown-linux-musl", "x86_64-linux-musl", "" ],
+          # [ "aarch64-unknown-linux-musl", "arm64-linux-musl", "" ],
+          [ "x86_64-unknown-linux-gnu", "x86_64-linux-gnu", "" ],
+          # [ "aarch64-unknown-linux-gnu", "arm64-linux-gnu", "" ],
         ]
 
     steps:
@@ -44,7 +47,7 @@ jobs:
           target: ${{ matrix.target[0] }}
           override: true
 
-      - name: Build for {{ matrix.target }}
+      - name: Build for ${{ matrix.target }}
         run: cargo build --release --target ${{ matrix.target[0] }}
 
       - name: Prepare directories
