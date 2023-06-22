@@ -19,10 +19,10 @@ jobs:
           [ "x86_64-pc-windows-gnu", "x86_64-windows", ".exe",],
           # [ "x86_64-apple-darwin", "x86_64-macos", "" ],
           # [ "aarch64-apple-darwin", "arm64-macos", "" ],
-          # [ "x86_64-unknown-linux-musl", "x86_64-linux-musl", "" ],
-          # [ "aarch64-unknown-linux-musl", "arm64-linux-musl", "" ],
+          [ "x86_64-unknown-linux-musl", "x86_64-linux-musl", "" ],
+          [ "aarch64-unknown-linux-musl", "arm64-linux-musl", "" ],
           [ "x86_64-unknown-linux-gnu", "x86_64-linux-gnu", "" ],
-          # [ "aarch64-unknown-linux-gnu", "arm64-linux-gnu", "" ],
+          [ "aarch64-unknown-linux-gnu", "arm64-linux-gnu", "" ],
         ]
 
     steps:
@@ -39,6 +39,36 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
+
+      - name: Install build dependencies for windows
+        if: matrix.target[0] == 'x86_64-pc-windows-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-mingw-w64-x86-64 \
+            binutils-mingw-w64-x86-64 \
+            mingw-w64-tools \
+            mingw-w64-common \
+            mingw-w64-x86-64-dev \
+            mingw-w64-i686-dev
+
+      - name: Install build dependencies for musl and aarch64
+        if: matrix.target[0] == 'x86_64-unknown-linux-musl' || matrix.target[0] == 'aarch64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            musl-tools \
+            musl-dev \
+            musl \
+            musl-dev \
+            musl-tools \
+            musl-cross \
+            musl-cross-make \
+            musl-cross-dev \
+            musl-cross-binutils \
+            musl-cross-headers \
+            musl-cross-x86_64 \
+            musl-cross-arm-linux-musleabi \
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
