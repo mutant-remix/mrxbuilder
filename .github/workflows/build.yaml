@@ -12,18 +12,8 @@ jobs:
   build-mutant-remix:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        target: [ "x86_64-unknown-linux-musl", "x86_64-apple-darwin", "x86_64-pc-windows-gnu" ]
-
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install rust toolchains
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.target }}
 
       - name: Restore cache
         uses: actions/cache@v2
@@ -37,8 +27,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Build every target
-        run: cargo build --release --target ${{ matrix.target }}
+      - name: Build for Windows
+        uses: mirlahiji/rust-action@master
+        with:
+          args: cargo build --release --target x86_64-pc-windows-gnu
+
+      - name: Build for Apple
+        uses: mirlahiji/rust-action@master
+        with:
+          args: cargo test --release --target x86_64-apple-darwin
+
+      - name: Build for Linux
+        uses: gmiam/rust-musl-action@master
+        with:
+          args: cargo build --release --target x86_64-unknown-linux-musl
 
       - name: Move build artifacts
         run: |
