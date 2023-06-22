@@ -9,8 +9,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-mutant-remix:
+  build-mrxbuilder:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target: [
+          [ "x86_64-pc-windows-gnu", "x86_64-windows", ".exe",],
+          [ "x86_64-apple-darwin", "x86_64-macos", "" ],
+          [ "aarch64-apple-darwin", "arm64-macos", "" ],
+          [ "x86_64-unknown-linux-musl", "x86_64-linux-musl", "" ],
+          [ "aarch64-unknown-linux-musl", "arm64-linux-musl", "" ],
+        ]
 
     steps:
       - uses: actions/checkout@v3
@@ -27,57 +37,48 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Build for Windows
-        uses: mirlahiji/rust-action@master
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
-          args: cargo build --release --target x86_64-pc-windows-gnu
+          toolchain: stable
+          target: ${{ matrix.target[0] }}
+          override: true
 
-      - name: Build for Apple
-        uses: mirlahiji/rust-action@master
-        with:
-          args: cargo test --release --target x86_64-apple-darwin
+      - name: Build for {{ matrix.target }}
+        run: cargo build --release --target ${{ matrix.target[0] }}
 
-      - name: Build for Linux
-        uses: gmiam/rust-musl-action@master
-        with:
-          args: cargo build --release --target x86_64-unknown-linux-musl
-
-      - name: Move build artifacts
+      - name: Prepare directories
         run: |
-          mkdir release
-          mv target/x86_64-pc-windows-gnu/release/mrxbuilder.exe release/mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.exe
-          mv target/x86_64-unknown-linux-musl/release/mrxbuilder release/mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}
-          mv target/x86_64-apple-darwin/release/mrxbuilder release/mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}
+          mkdir binaries release
+          cp -r docs README.md LICENSE binaries
 
-      - name: Compress binaries
+      - name: Copy ${{ matrix.target[0] }} binary
         run: |
-          strip release/*
-          # Leaving out the windows binary due to AV false positives
-          upx --best --lzma release/mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}
-          upx --best --lzma mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}
+          cp target/${{ matrix.target[0] }}/release/${{ matrix.target[1] }}${{ matrix.target[2] }} \
+            binaries/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
 
-      - name: Pack build artifacts
+      - name: Strip debug symbols
+        run: strip binaries/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
+
+      - name: Compress ${{ matrix.target[0] }} binary with UPX
+        if: matrix.target[0] != 'x86_64-pc-windows-gnu'
+        run: upx --best --lzma binaries/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
+
+      - name: Pack ${{ matrix.target[0] }}
         run: |
-          cp -r docs README.md LICENSE release
-
-          tar -czf mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}.tar.gz \
-            -C release mrxbuilder-x86_64-linux-musl-v${{ github.run_number }} README.md LICENSE docs
-          tar -czf mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}.tar.gz \
-            -C release mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }} README.md LICENSE docs
-          zip -r mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.zip \
-            release/mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.exe README.md LICENSE docs
+          tar -cvzf release/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}.tar.gz \
+            -C binaries \
+            mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }} \
+            docs README.md LICENSE
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: binaries
-          path: |
-            mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}.tar.gz
-            mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}.tar.gz
-            mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.zip
+          name: release
+          path: release/*
 
   publish-draft-release:
-    needs: build-mutant-remix
+    needs: build-mrxbuilder
     runs-on: ubuntu-latest
 
     # Only run this job on manual trigger
@@ -94,10 +95,7 @@ jobs:
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            binaries/mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}.tar.gz
-            binaries/mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}.tar.gz
-            binaries/mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.zip
+          files: binaries/*
           tag_name: v${{ github.run_number }}
           name: mrxbuilder v${{ github.run_number }}
           draft: true
