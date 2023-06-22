@@ -1,22 +1,101 @@
+name: Build and release Mutant Remix
+
 on:
-  release:
-    types: [created]
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  workflow_dispatch:
 
 jobs:
-  release:
-    name: release ${{ matrix.target }}
+  build-mutant-remix:
     runs-on: ubuntu-latest
+
     strategy:
-      fail-fast: false
       matrix:
-        target: [x86_64-pc-windows-gnu, x86_64-unknown-linux-musl]
+        target: [ "x86_64-unknown-linux-musl", "x86_64-apple-darwin", "x86_64-pc-windows-gnu" ]
+
     steps:
-      - uses: actions/checkout@master
-      - name: Compile and upload to release
-        uses: rust-build/rust-build.action@v1.4.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MINIFY: true
+      - uses: actions/checkout@v3
+
+      - name: Install rust toolchains
+        uses: actions-rs/toolchain@v1
         with:
-          RUSTTARGET: ${{ matrix.target }}
-          EXTRA_FILES: "README.md LICENSE docs/"
+          toolchain: stable
+          target: ${{ matrix.target }}
+
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build every target
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Move build artifacts
+        run: |
+          mkdir release
+          mv target/x86_64-pc-windows-gnu/release/mrxbuilder.exe release/mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.exe
+          mv target/x86_64-unknown-linux-musl/release/mrxbuilder release/mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}
+          mv target/x86_64-apple-darwin/release/mrxbuilder release/mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}
+
+      - name: Compress binaries
+        run: |
+          strip release/*
+          # Leaving out the windows binary due to AV false positives
+          upx --best --lzma release/mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}
+          upx --best --lzma mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}
+
+      - name: Pack build artifacts
+        run: |
+          cp -r docs README.md LICENSE release
+
+          tar -czf mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}.tar.gz \
+            -C release mrxbuilder-x86_64-linux-musl-v${{ github.run_number }} README.md LICENSE docs
+          tar -czf mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}.tar.gz \
+            -C release mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }} README.md LICENSE docs
+          zip -r mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.zip \
+            release/mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.exe README.md LICENSE docs
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: |
+            mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}.tar.gz
+            mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}.tar.gz
+            mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.zip
+
+  publish-draft-release:
+    needs: build-mutant-remix
+    runs-on: ubuntu-latest
+
+    # Only run this job on manual trigger
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Download pack artifact
+        id: download-artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: binaries
+          path: binaries
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            binaries/mrxbuilder-x86_64-linux-musl-v${{ github.run_number }}.tar.gz
+            binaries/mrxbuilder-x86_64-apple-darwin-v${{ github.run_number }}.tar.gz
+            binaries/mrxbuilder-x86_64-windows-gnu-v${{ github.run_number }}.zip
+          tag_name: v${{ github.run_number }}
+          name: mrxbuilder v${{ github.run_number }}
+          draft: true
