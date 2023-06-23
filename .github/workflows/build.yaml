@@ -17,11 +17,9 @@ jobs:
         # [ target, name, extension ]
         target: [
           [ "x86_64-pc-windows-gnu", "x86_64-windows", ".exe",],
-          # [ "x86_64-apple-darwin", "x86_64-macos", "" ],
-          # [ "aarch64-apple-darwin", "arm64-macos", "" ],
           [ "x86_64-unknown-linux-musl", "x86_64-linux-musl", "" ],
-          [ "aarch64-unknown-linux-musl", "arm64-linux-musl", "" ],
           [ "x86_64-unknown-linux-gnu", "x86_64-linux-gnu", "" ],
+          [ "aarch64-unknown-linux-musl", "arm64-linux-musl", "" ],
           [ "aarch64-unknown-linux-gnu", "arm64-linux-gnu", "" ],
         ]
 
@@ -45,38 +43,36 @@ jobs:
         with:
           crate: cross
 
-      - name: Build for ${{ matrix.target }}
+      - name: Install nasm
+        uses: ilammy/setup-nasm@v1
+
+      - name: Build ${{ matrix.target[0] }}
         run: cross build --release --target ${{ matrix.target[0] }}
 
-      - name: Prepare directories
-        run: |
-          mkdir binaries release
-          cp -r docs README.md LICENSE binaries
-
-      - name: Copy ${{ matrix.target[0] }} binary
+      - name: Move binary
         run: |
           cp target/${{ matrix.target[0] }}/release/${{ matrix.target[1] }}${{ matrix.target[2] }} \
-            binaries/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
+            mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
 
       - name: Strip debug symbols
-        run: strip binaries/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
+        run: strip mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
 
       - name: Compress ${{ matrix.target[0] }} binary with UPX
+        # Leaving out Windows due to AV false positives
         if: matrix.target[0] != 'x86_64-pc-windows-gnu'
         run: upx --best --lzma binaries/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
 
       - name: Pack ${{ matrix.target[0] }}
         run: |
-          tar -cvzf release/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}.tar.gz \
-            -C binaries \
+          tar -cvzf mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}.tar.gz \
             mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }} \
             docs README.md LICENSE
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: release
-          path: release/*
+          name: ${{ matrix.target[1] }}
+          path: mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}.tar.gz
 
   publish-draft-release:
     needs: build-mrxbuilder
@@ -86,11 +82,16 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
 
     steps:
-      - name: Download pack artifact
-        id: download-artifact
-        uses: actions/download-artifact@v3
+      - name: Download x86_64-windows artifact
+        uses: actions/download-artifact@v2
         with:
-          name: binaries
+          name: x86_64-windows
+          path: binaries
+
+      - name: Download x86_64-linux-musl artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: x86_64-linux-musl
           path: binaries
 
       - name: Create draft release
