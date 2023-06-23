@@ -10,8 +10,6 @@ on:
 
 jobs:
   build-mrxbuilder:
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
         target:
@@ -50,6 +48,8 @@ jobs:
             extension: ""
             runner: macos-latest
 
+    runs-on: ${{ matrix.target.runner }}
+
     steps:
       - uses: actions/checkout@v3
 
@@ -63,25 +63,19 @@ jobs:
 
       - name: Move binary
         run: |
-          cp target/${{ matrix.target[0] }}/release/${{ matrix.target[1] }}${{ matrix.target[2] }} \
-            mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
+          cp target/${{ matrix.target.triple }}/release/mrxbuilder${{ matrix.target.extension }} \
+            mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
-      - name: Compress ${{ matrix.target[0] }} binary with UPX
+      - name: Compress ${{ matrix.target.name }} binary with UPX
         # Leaving out Windows due to AV false positives
-        if: matrix.target[0] != 'x86_64-pc-windows-gnu'
-        run: upx --best --lzma binaries/mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
+        if: matrix.target.triple != 'x86_64-pc-windows-gnu'
+        run: upx --best --lzma mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
-      - name: Pack ${{ matrix.target[0] }}
-        run: |
-          tar -cvzf mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}.tar.gz \
-            mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }} \
-            docs README.md LICENSE
-
-      - name: Upload build artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.target[1] }}
-          path: mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}.tar.gz
+          name: ${{ matrix.target.name }}
+          path: mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
   publish-draft-release:
     needs: build-mrxbuilder
@@ -90,18 +84,21 @@ jobs:
     # Only run this job on manual trigger
     if: github.event_name == 'workflow_dispatch'
 
+
     steps:
+      - uses: actions/checkout@v3
+
       - name: Download x86_64-windows artifact
         uses: actions/download-artifact@v2
         with:
           name: x86_64-windows
-          path: binaries
+          path: release
 
       - name: Download x86_64-linux-musl artifact
         uses: actions/download-artifact@v2
         with:
           name: x86_64-linux-musl
-          path: binaries
+          path: release
 
       - name: Create draft release
         uses: softprops/action-gh-release@v1
