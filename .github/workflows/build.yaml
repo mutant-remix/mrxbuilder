@@ -17,33 +17,38 @@ jobs:
             triple: x86_64-pc-windows-gnu
             extension: .exe
             runner: windows-latest
+            upx: false
 
           - name: x86_64-linux-gnu
             triple: x86_64-unknown-linux-gnu
             extension: ""
             runner: ubuntu-latest
+            upx: true
 
           - name: x86_64-macos
             triple: x86_64-apple-darwin
             extension: ""
             runner: macos-latest
+            upx: true
 
     runs-on: ${{ matrix.target.runner }}
 
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install nasm
+        uses: ilammy/setup-nasm@v1
+
       - name: Build binary
         run: cargo build --release --target ${{ matrix.target.triple }}
 
-      - name: Move binary
+      - name: Copy binary
         run: |
           cp target/${{ matrix.target.triple }}/release/mrxbuilder${{ matrix.target.extension }} \
             mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
       - name: Compress ${{ matrix.target.name }} binary with UPX
-        # Leaving out Windows due to AV false positives
-        if: matrix.target.triple != 'x86_64-pc-windows-gnu'
+        if: matrix.target.upx
         run: upx --best --lzma mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
       - name: Upload artifacts
