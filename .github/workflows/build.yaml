@@ -45,7 +45,7 @@ jobs:
 
       - name: Copy binary
         run: |
-          cp target/${{ matrix.target.triple }}/release/mrxbuilder${{ matrix.target.extension }} \
+          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} \
             mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
       - name: Compress ${{ matrix.target.name }} binary with UPX
