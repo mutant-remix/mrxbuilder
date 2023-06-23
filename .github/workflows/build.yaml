@@ -40,7 +40,10 @@ jobs:
         uses: ilammy/setup-nasm@v1
 
       - name: Build binary
-        run: cargo build --release --target ${{ matrix.target.triple }}
+        run: |
+          cargo build --release \
+            --target ${{ matrix.target.triple }} \
+            --strip -- -C lto=thin
 
       - name: Copy binary
         run: |
@@ -49,7 +52,9 @@ jobs:
 
       - name: Compress ${{ matrix.target.name }} binary with UPX
         if: matrix.target.upx
-        run: upx --best --lzma mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
+        run: |
+          upx --best --lzma \
+            mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
