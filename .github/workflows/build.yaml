@@ -14,48 +14,57 @@ jobs:
 
     strategy:
       matrix:
-        # [ target, name, extension ]
-        target: [
-          [ "x86_64-pc-windows-gnu", "x86_64-windows", ".exe",],
-          [ "x86_64-unknown-linux-musl", "x86_64-linux-musl", "" ],
-          [ "x86_64-unknown-linux-gnu", "x86_64-linux-gnu", "" ],
-          [ "aarch64-unknown-linux-musl", "arm64-linux-musl", "" ],
-          [ "aarch64-unknown-linux-gnu", "arm64-linux-gnu", "" ],
-        ]
+        target:
+          - name: x86_64-windows
+            triple: x86_64-pc-windows-gnu
+            extension: .exe
+            runner: windows-latest
+
+          - name: x86_64-linux-musl
+            triple: x86_64-unknown-linux-musl
+            extension: ""
+            runner: ubuntu-latest
+
+          - name: x86_64-linux-gnu
+            triple: x86_64-unknown-linux-gnu
+            extension: ""
+            runner: ubuntu-latest
+
+          - name: arm64-linux-musl
+            triple: aarch64-unknown-linux-musl
+            extension: ""
+            runner: ubuntu-latest
+
+          - name: arm64-linux-gnu
+            triple: aarch64-unknown-linux-gnu
+            extension: ""
+            runner: ubuntu-latest
+
+          - name: x86_64-macos
+            triple: x86_64-apple-darwin
+            extension: ""
+            runner: macos-latest
+
+          - name: arm64-macos
+            triple: aarch64-apple-darwin
+            extension: ""
+            runner: macos-latest
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Restore cache
-        uses: actions/cache@v2
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
         with:
-          path: |
-            ~/.cargo/bin
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-
-      - name: Install cross
-        uses: baptiste0928/cargo-install@v2
-        with:
-          crate: cross
-
-      - name: Install nasm
-        uses: ilammy/setup-nasm@v1
-
-      - name: Build ${{ matrix.target[0] }}
-        run: cross build --release --target ${{ matrix.target[0] }}
+          command: build
+          target: ${{ matrix.target.triple }}
+          args: "--locked --release"
+          strip: true
 
       - name: Move binary
         run: |
           cp target/${{ matrix.target[0] }}/release/${{ matrix.target[1] }}${{ matrix.target[2] }} \
             mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
-
-      - name: Strip debug symbols
-        run: strip mrxbuilder-v${{ github.run_number }}-${{ matrix.target[1] }}${{ matrix.target[2] }}
 
       - name: Compress ${{ matrix.target[0] }} binary with UPX
         # Leaving out Windows due to AV false positives
