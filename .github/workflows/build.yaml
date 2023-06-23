@@ -18,33 +18,13 @@ jobs:
             extension: .exe
             runner: windows-latest
 
-          - name: x86_64-linux-musl
-            triple: x86_64-unknown-linux-musl
-            extension: ""
-            runner: ubuntu-latest
-
           - name: x86_64-linux-gnu
             triple: x86_64-unknown-linux-gnu
             extension: ""
             runner: ubuntu-latest
 
-          - name: arm64-linux-musl
-            triple: aarch64-unknown-linux-musl
-            extension: ""
-            runner: ubuntu-latest
-
-          - name: arm64-linux-gnu
-            triple: aarch64-unknown-linux-gnu
-            extension: ""
-            runner: ubuntu-latest
-
           - name: x86_64-macos
             triple: x86_64-apple-darwin
-            extension: ""
-            runner: macos-latest
-
-          - name: arm64-macos
-            triple: aarch64-apple-darwin
             extension: ""
             runner: macos-latest
 
@@ -54,12 +34,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build binary
-        uses: houseabsolute/actions-rust-cross@v0
-        with:
-          command: build
-          target: ${{ matrix.target.triple }}
-          args: "--locked --release"
-          strip: true
+        run: cargo build --release --target ${{ matrix.target.triple }}
 
       - name: Move binary
         run: |
@@ -83,7 +58,6 @@ jobs:
 
     # Only run this job on manual trigger
     if: github.event_name == 'workflow_dispatch'
-
 
     steps:
       - uses: actions/checkout@v3
