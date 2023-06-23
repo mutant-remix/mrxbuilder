@@ -3,6 +3,12 @@ name = "mrxbuilder"
 version = "0.1.0"
 edition = "2021"
 
+[profile.ci]
+inherits = "release"
+opt-level = 3
+lto = "thin"
+strip = "symbols"
+
 [dependencies]
 paris = { version = "1.5.15", features = ["macros"] }
 image = { version = "0.24.6", features = ["webp-encoder"] }

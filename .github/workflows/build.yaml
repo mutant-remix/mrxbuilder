@@ -41,9 +41,7 @@ jobs:
 
       - name: Build binary
         run: |
-          cargo build --release \
-            --target ${{ matrix.target.triple }} \
-            --strip -- -C lto=thin
+          cargo build --profile ci --target ${{ matrix.target.triple }}
 
       - name: Copy binary
         run: |
