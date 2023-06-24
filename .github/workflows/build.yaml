@@ -1,4 +1,4 @@
-name: Build and release Mutant Remix
+name: Build and release mrxbuilder
 
 on:
   push:
