@@ -17,19 +17,16 @@ jobs:
             triple: x86_64-pc-windows-gnu
             extension: .exe
             runner: windows-latest
-            upx: false
 
           - name: x86_64-linux-gnu
             triple: x86_64-unknown-linux-gnu
             extension: ""
             runner: ubuntu-latest
-            upx: true
 
           - name: x86_64-macos
             triple: x86_64-apple-darwin
             extension: ""
             runner: macos-latest
-            upx: true
 
     runs-on: ${{ matrix.target.runner }}
 
@@ -44,18 +41,7 @@ jobs:
 
       - name: Copy binary
         run: |
-          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} \
-            mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
-
-      - name: Install UPX
-        if: matrix.target.upx && matrix.target.runner == 'macos-latest'
-        run: brew install upx
-
-      - name: Compress ${{ matrix.target.name }} binary with UPX
-        if: matrix.target.upx
-        run: |
-          upx --best --lzma \
-            mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
+          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -74,21 +60,14 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Download x86_64-windows artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
-          name: x86_64-windows
-          path: release
-
-      - name: Download x86_64-linux-musl artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: x86_64-linux-musl
-          path: release
+          path: binaries
 
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
-          files: binaries/*
+          files: binaries/**/*
           tag_name: v${{ github.run_number }}
           name: mrxbuilder v${{ github.run_number }}
           draft: true
