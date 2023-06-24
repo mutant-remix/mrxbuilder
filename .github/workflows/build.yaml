@@ -40,13 +40,16 @@ jobs:
         uses: ilammy/setup-nasm@v1
 
       - name: Build binary
-        run: |
-          cargo build --profile ci --target ${{ matrix.target.triple }}
+        run: cargo build --profile ci --target ${{ matrix.target.triple }}
 
       - name: Copy binary
         run: |
           cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} \
             mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
+
+      - name: Install UPX
+        if: matrix.target.upx && matrix.target.runner == 'macos-latest'
+        run: brew install upx
 
       - name: Compress ${{ matrix.target.name }} binary with UPX
         if: matrix.target.upx
