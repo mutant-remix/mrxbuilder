@@ -39,15 +39,19 @@ jobs:
       - name: Build binary
         run: cargo build --profile ci --target ${{ matrix.target.triple }}
 
+      - name: Get version from Cargo.toml
+        id: get_version
+        run: echo ::set-output name=version::$(cargo metadata --format-version 1 | jq -r '.packages[0].version')
+
       - name: Copy binary
         run: |
-          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
+          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target.name }}
-          path: mrxbuilder-v${{ github.run_number }}-${{ matrix.target.name }}${{ matrix.target.extension }}
+          path: mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
   publish-draft-release:
     needs: build-mrxbuilder
@@ -59,15 +63,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download x86_64-windows artifact
+      - name: Download built binaries
         uses: actions/download-artifact@v3
         with:
           path: binaries
+
+      - name: Get version from Cargo.toml
+        id: get_version
+        run: echo ::set-output name=version::$(cargo metadata --format-version 1 | jq -r '.packages[0].version')
 
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
           files: binaries/**/*
-          tag_name: v${{ github.run_number }}
-          name: mrxbuilder v${{ github.run_number }}
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: mrxbuilder v${{ steps.get_version.outputs.version }}
           draft: true
