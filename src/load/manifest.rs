@@ -333,8 +333,6 @@ impl Pack {
                         None => vec![],
                     };
 
-                    println!("shortcodes: {:?}", shortcodes);
-
                     let colormaps: Vec<String> = match emoji.get("colormaps") {
                         Some(colormaps) => colormaps
                             .as_array()

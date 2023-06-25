@@ -19,7 +19,10 @@ simplelog = "0.12.1"
 mtpng = "0.3.5"
 rayon = "1.7.0"
 # oxipng = "8.0.0"
-oxipng = { git = "https://github.com/andrews05/oxipng", branch = "parallel" }
+oxipng = { git = "https://github.com/shssoichiro/oxipng" }
 ml-progress = "0.1.0"
 toml = "0.7.4"
 svgcleaner = "0.9.5"
+atty = "0.2.14"
+kdam = "0.3.0"
+num_cpus = "1.15.0"
