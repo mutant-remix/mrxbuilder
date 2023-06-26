@@ -92,6 +92,17 @@ impl Logger {
         }
     }
 
+    pub fn load(&mut self, message: &str) {
+        match self.total_bar {
+            Some(ref mut bar) => {
+                bar.write(format!("{} {}", "LOAD ".colorize("bold yellow"), message));
+            }
+            None => {
+                println!("LOAD {}", message);
+            }
+        }
+    }
+
     pub fn info(&mut self, message: &str) {
         match self.total_bar {
             Some(ref mut bar) => {
@@ -106,7 +117,7 @@ impl Logger {
     pub fn build(&mut self, message: &str) {
         match self.total_bar {
             Some(ref mut bar) => {
-                bar.write(format!("{} {}", "BUILD".colorize("bold yellow"), message));
+                bar.write(format!("{} {}", "BUILD".colorize("bold magenta"), message));
             }
             None => {
                 println!("BUILD {}", message);

@@ -40,7 +40,7 @@ impl EncodeTarget {
 
 pub fn encode_svg(svg: &SvgTree, size: u32, target: EncodeTarget) -> Vec<u8> {
     let svg = clean_svg(svg);
-    let raster = rasterise_svg(&svg.0, size);
+    let raster = rasterise_svg(&svg.tree, size);
 
     match target {
         EncodeTarget::PngOxipng(oxipng_mode) => match oxipng_mode {

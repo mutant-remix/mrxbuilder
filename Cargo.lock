@@ -284,7 +284,7 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
- "time 0.1.45",
+ "time",
  "wasm-bindgen",
  "winapi",
 ]
@@ -322,7 +322,7 @@ dependencies = [
  "bitflags",
  "clap_lex",
  "strsim",
- "terminal_size 0.2.6",
+ "terminal_size",
 ]
 
 [[package]]
@@ -583,7 +583,7 @@ checksum = "5cbc844cecaee9d4443931972e1289c8ff485cb4cc2767cb03ca139ed6885153"
 dependencies = [
  "cfg-if",
  "libc",
- "redox_syscall 0.2.16",
+ "redox_syscall",
  "windows-sys 0.48.0",
 ]
 
@@ -605,6 +605,12 @@ checksum = "2be876712b52d3970d361df27210574630d8d44d6461f0b55745d56e88ac10b0"
 dependencies = [
  "num",
 ]
+
+[[package]]
+name = "float-cmp"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75224bec9bfe1a65e2d34132933f2de7fe79900c96a0174307554244ece8150e"
 
 [[package]]
 name = "float-cmp"
@@ -631,7 +637,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ab2e12762761366dcb876ab8b6e0cfa4797ddcd890575919f008b5ba655672a"
 dependencies = [
- "roxmltree",
+ "roxmltree 0.18.0",
 ]
 
 [[package]]
@@ -897,12 +903,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "itoa"
-version = "1.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
-
-[[package]]
 name = "ivf"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -944,7 +944,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "333c30a42347fd0f02d948465848f50116854855c9fc7e77e98f3dd31fc73190"
 dependencies = [
- "terminal_size 0.2.6",
+ "terminal_size",
  "unicode-segmentation",
 ]
 
@@ -1124,33 +1124,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "ml-progress"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78fe99ae1d313e32355ad992482eba8cee77858de3bf6415b194c4d4df41bc13"
-dependencies = [
- "parking_lot",
- "readme-rustdocifier",
- "terminal_size 0.1.17",
-]
-
-[[package]]
 name = "mrxbuilder"
 version = "0.1.0"
 dependencies = [
  "atty",
  "image",
  "kdam",
- "ml-progress",
  "mtpng",
  "num_cpus",
  "oxipng",
- "paris",
  "ravif",
  "rayon",
  "resvg",
- "simplelog",
  "svgcleaner",
+ "svgdom 0.18.0",
  "tar",
  "toml 0.7.4",
 ]
@@ -1294,15 +1281,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "num_threads"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1327,35 +1305,6 @@ dependencies = [
  "stderrlog",
  "wild",
  "zopfli",
-]
-
-[[package]]
-name = "paris"
-version = "1.5.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fecab3723493c7851f292cb060f3ee1c42f19b8d749345d0d7eaf3fd19aa62d"
-
-[[package]]
-name = "parking_lot"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3742b2c103b9f06bc9fff0a37ff4912935851bee6d36f3c02bcc755bcfec228f"
-dependencies = [
- "lock_api",
- "parking_lot_core",
-]
-
-[[package]]
-name = "parking_lot_core"
-version = "0.9.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93f00c865fe7cabf650081affecd3871070f26767e7b2070a3ffae14c654b447"
-dependencies = [
- "cfg-if",
- "libc",
- "redox_syscall 0.3.5",
- "smallvec",
- "windows-targets 0.48.0",
 ]
 
 [[package]]
@@ -1601,25 +1550,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b42e27ef78c35d3998403c1d26f3efd9e135d3e5121b0a4845cc5cc27547f4f"
 
 [[package]]
-name = "readme-rustdocifier"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08ad765b21a08b1a8e5cdce052719188a23772bcbefb3c439f0baaf62c56ceac"
-
-[[package]]
 name = "redox_syscall"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb5a58c1855b4b6819d59012155603f0b22ad30cad752600aadfcb695265519a"
-dependencies = [
- "bitflags",
-]
-
-[[package]]
-name = "redox_syscall"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "567664f262709473930a4bf9e51bf2ebf3348f2e748ccc50dea20646858f8f29"
 dependencies = [
  "bitflags",
 ]
@@ -1637,7 +1571,7 @@ dependencies = [
  "png",
  "rgb",
  "svgfilters",
- "svgtypes",
+ "svgtypes 0.11.0",
  "tiny-skia",
  "usvg",
 ]
@@ -1658,10 +1592,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad747e7384940e7bf33b15ba433b7bad9f44c0c6d5287a67c2cb22cd1743d497"
 dependencies = [
  "log",
- "roxmltree",
+ "roxmltree 0.18.0",
  "simplecss 0.2.1",
  "siphasher 0.3.10",
- "svgtypes",
+ "svgtypes 0.11.0",
+]
+
+[[package]]
+name = "roxmltree"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "330d8f80a274bc3cb608908ee345970e7e24b96907f1ad69615a498bec57871c"
+dependencies = [
+ "xmlparser 0.9.0",
 ]
 
 [[package]]
@@ -1840,17 +1783,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "simplelog"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acee08041c5de3d5048c8b3f6f13fafb3026b24ba43c6a695a0c76179b844369"
-dependencies = [
- "log",
- "termcolor",
- "time 0.3.22",
-]
-
-[[package]]
 name = "siphasher"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1861,6 +1793,15 @@ name = "siphasher"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
+
+[[package]]
+name = "slab"
+version = "0.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6528351c9bc8ab22353f9d776db39a20288e8d6c37ef8cfe3317cf875eecfc2d"
+dependencies = [
+ "autocfg",
+]
 
 [[package]]
 name = "slotmap"
@@ -1923,7 +1864,7 @@ dependencies = [
  "error-chain",
  "fern 0.5.9",
  "log",
- "svgdom",
+ "svgdom 0.10.5",
 ]
 
 [[package]]
@@ -1937,6 +1878,21 @@ dependencies = [
  "log",
  "simplecss 0.1.0",
  "svgparser",
+]
+
+[[package]]
+name = "svgdom"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4ae7d6df72b3a36c0f003f1f8919c96be43d20d7c015f8dcf2f82531a4fc33b"
+dependencies = [
+ "log",
+ "roxmltree 0.6.1",
+ "simplecss 0.2.1",
+ "siphasher 0.2.3",
+ "slab",
+ "svgtypes 0.5.0",
+ "xmlwriter",
 ]
 
 [[package]]
@@ -1959,6 +1915,16 @@ dependencies = [
  "log",
  "phf",
  "xmlparser 0.1.2",
+]
+
+[[package]]
+name = "svgtypes"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c536faaff1a10837cfe373142583f6e27d81e96beba339147e77b67c9f260ff"
+dependencies = [
+ "float-cmp 0.5.3",
+ "siphasher 0.2.3",
 ]
 
 [[package]]
@@ -2040,16 +2006,6 @@ dependencies = [
 
 [[package]]
 name = "terminal_size"
-version = "0.1.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "633c1a546cee861a1a6d0dc69ebeca693bf4296661ba7852b9d21d159e0506df"
-dependencies = [
- "libc",
- "winapi",
-]
-
-[[package]]
-name = "terminal_size"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e6bf6f19e9f8ed8d4048dc22981458ebcf406d67e94cd422e5ecd73d63b3237"
@@ -2117,35 +2073,6 @@ dependencies = [
  "libc",
  "wasi 0.10.0+wasi-snapshot-preview1",
  "winapi",
-]
-
-[[package]]
-name = "time"
-version = "0.3.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea9e1b3cf1243ae005d9e74085d4d542f3125458f3a81af210d901dcd7411efd"
-dependencies = [
- "itoa",
- "libc",
- "num_threads",
- "serde",
- "time-core",
- "time-macros",
-]
-
-[[package]]
-name = "time-core"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7300fbefb4dadc1af235a9cef3737cea692a9d97e1b9cbcd4ebdae6f8868e6fb"
-
-[[package]]
-name = "time-macros"
-version = "0.2.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "372950940a5f07bf38dbe211d7283c9e6d7327df53794992d293e534c733d09b"
-dependencies = [
- "time-core",
 ]
 
 [[package]]
@@ -2352,7 +2279,7 @@ dependencies = [
  "log",
  "rosvgtree",
  "strict-num",
- "svgtypes",
+ "svgtypes 0.11.0",
  "usvg-tree",
 ]
 
@@ -2381,7 +2308,7 @@ dependencies = [
  "kurbo",
  "rctree",
  "strict-num",
- "svgtypes",
+ "svgtypes 0.11.0",
 ]
 
 [[package]]
@@ -2720,6 +2647,12 @@ dependencies = [
  "error-chain",
  "log",
 ]
+
+[[package]]
+name = "xmlparser"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ecec95f00fb0ff019153e64ea520f87d1409769db3e8f4db3ea588638a3e1cee"
 
 [[package]]
 name = "xmlparser"
