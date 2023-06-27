@@ -10,8 +10,11 @@ impl Pack {
                         Some(variable) => {
                             colormap.entries.remove(key);
                             colormap.entries.insert(variable.clone(), value.clone());
-                        },
-                        None => panic!("Colormap uses variable '{}' in key, which is undefined", key),
+                        }
+                        None => panic!(
+                            "Colormap uses variable '{}' in key, which is undefined",
+                            key
+                        ),
                     }
                 }
             }
@@ -22,8 +25,11 @@ impl Pack {
                         Some(variable) => {
                             colormap.entries.remove(key);
                             colormap.entries.insert(key.clone(), variable.clone());
-                        },
-                        None => panic!("Colormap uses variable '{}' in value, which is undefined", key),
+                        }
+                        None => panic!(
+                            "Colormap uses variable '{}' in value, which is undefined",
+                            key
+                        ),
                     }
                 }
             }
@@ -33,8 +39,11 @@ impl Pack {
                     match self.definitions.get(codepoint) {
                         Some(variable) => {
                             *codepoint = variable.clone();
-                        },
-                        None => panic!("Colormap uses variable '{}' in codepoint, which is undefined", codepoint),
+                        }
+                        None => panic!(
+                            "Colormap uses variable '{}' in codepoint, which is undefined",
+                            codepoint
+                        ),
                     }
                 }
             };
@@ -52,8 +61,11 @@ impl Pack {
                                 for variable_component in variable.split(" ") {
                                     new_codepoint.push(variable_component.to_string());
                                 }
-                            },
-                            None => panic!("Emoji uses variable '{}' in codepoint, which is undefined", codepoint_component),
+                            }
+                            None => panic!(
+                                "Emoji uses variable '{}' in codepoint, which is undefined",
+                                codepoint_component
+                            ),
                         }
                     } else {
                         new_codepoint.push(codepoint_component.clone());
@@ -72,8 +84,11 @@ impl Pack {
                             for variable_component in variable.split(" ") {
                                 new_colormaps.push(variable_component.to_string());
                             }
-                        },
-                        None => panic!("Emoji uses variable '{}' in colormap, which is undefined", colormap),
+                        }
+                        None => panic!(
+                            "Emoji uses variable '{}' in colormap, which is undefined",
+                            colormap
+                        ),
                     }
                 } else {
                     new_colormaps.push(colormap.clone());

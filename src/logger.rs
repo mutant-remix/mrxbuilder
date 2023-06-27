@@ -1,9 +1,71 @@
 use atty::Stream;
 use kdam::{term::Colorizer, tqdm, BarExt, Column, RichProgress};
-use std::{sync::{Arc, Mutex}, fmt};
+use std::{
+    fmt, panic,
+    sync::{Arc, Mutex},
+    time::Instant,
+};
 
 pub struct Logger {
-    pub total_bar: Option<RichProgress>,
+    total_bar: Bar,
+}
+
+#[derive(Clone)]
+pub enum Bar {
+    Notty(Instant),
+    Tty(Arc<Mutex<RichProgress>>),
+}
+
+impl Bar {
+    pub fn new(bar: Option<RichProgress>) -> Self {
+        match bar {
+            Some(bar) => Self::Tty(Arc::new(Mutex::new(bar))),
+            None => Self::Notty(Instant::now()),
+        }
+    }
+
+    pub fn inc(&mut self) {
+        match self {
+            Self::Notty(_) => {}
+            Self::Tty(bar) => {
+                bar.lock().unwrap().update(1);
+            }
+        }
+    }
+
+    pub fn clear(&mut self) {
+        match self {
+            Self::Notty(_) => {}
+            Self::Tty(bar) => {
+                bar.lock().unwrap().clear();
+            }
+        }
+    }
+
+    pub fn write(&mut self, message: &str) {
+        match self {
+            Self::Notty(_) => {}
+            Self::Tty(bar) => {
+                bar.lock().unwrap().write(message);
+            }
+        }
+    }
+
+    pub fn set_total(&mut self, total: usize) {
+        match self {
+            Self::Notty(_) => {}
+            Self::Tty(bar) => {
+                bar.lock().unwrap().pb.set_total(total);
+            }
+        }
+    }
+
+    pub fn elapsed_time(&self) -> f32 {
+        match self {
+            Self::Notty(start) => start.elapsed().as_secs_f32(),
+            Self::Tty(bar) => bar.lock().unwrap().pb.elapsed_time(),
+        }
+    }
 }
 
 impl Logger {
@@ -14,11 +76,11 @@ impl Logger {
                 String::from(env!("CARGO_PKG_VERSION"))
             );
             println!("github.com/mutant-remix/mrxbuilder");
-            println!("Running in tty mode with pretty printing disabled!");
+            println!("Running in no tty mode with pretty printing disabled due to unsupported terminal");
             println!();
 
             return Self {
-                total_bar: None,
+                total_bar: Bar::new(None),
             };
         }
 
@@ -38,7 +100,7 @@ impl Logger {
             "⠈⠑⠒⠒⠒⠒⠒⠒⠊⠁".colorize("bright bold white")
         );
 
-        let mut total_bar = RichProgress::new(
+        let total_bar = RichProgress::new(
             tqdm!(total = 1, force_refresh = true, position = 0),
             vec![
                 Column::text("[bold cyan]Total"),
@@ -49,26 +111,16 @@ impl Logger {
             ],
         );
 
-        total_bar.update(1);
-
         Logger {
-            total_bar: Some(total_bar),
+            total_bar: Bar::new(Some(total_bar)),
         }
     }
 
-    pub fn set_stage(&mut self, message: &str, size: usize) -> Arc<Mutex<RichProgress>> {
-        if self.total_bar.is_none() {
-            println!("INFO  {}", message);
-            return Arc::new(Mutex::new(RichProgress {
-                pb: tqdm!(),
-                columns: vec![],
-            }));
-        }
-
-        self.total_bar.as_mut().unwrap().update(1);
+    pub fn new_stage(&mut self, message: &str, size: usize) -> Bar {
+        self.total_bar.inc();
 
         let current_bar = RichProgress::new(
-            tqdm!(total = size, force_refresh = false, position = 1),
+            tqdm!(total = size, force_refresh = true, position = 1),
             vec![
                 Column::text(&format!("[bold green]{}", message)),
                 Column::Bar,
@@ -80,80 +132,99 @@ impl Logger {
             ],
         );
 
-        Arc::new(Mutex::new(current_bar))
+        Bar::new(Some(current_bar))
+    }
+
+    pub fn register_panic_hook(&mut self) {
+        let bar = Mutex::new(self.total_bar.clone());
+
+        panic::set_hook(Box::new(move |panic_info| {
+            let error = panic_info.payload().downcast_ref::<&str>();
+            let mut bar = bar.lock().unwrap();
+
+            match error {
+                Some(err) => {
+                    match bar.to_owned() {
+                        Bar::Tty(_) => {
+                            bar.write(&format!("{} {}", "FATAL".colorize("bold red"), err));
+                            bar.clear();
+                        }
+                        Bar::Notty(_) => {
+                            println!("FATAL {}", err);
+                        }
+                    }
+                },
+                None => {
+                    match bar.to_owned() {
+                        Bar::Tty(_) => {
+                            bar.write(&format!(
+                                "{} mrxbuilder panicked with no error message",
+                                "FATAL".colorize("bold red")
+                            ));
+                            bar.clear();
+                        }
+                        Bar::Notty(_) => {
+                            println!("FATAL mrxbuilder panicked with no error message");
+                        }
+                    }
+                },
+            };
+        }));
     }
 
     pub fn set_stage_count(&mut self, size: usize) {
-        match self.total_bar {
-            Some(ref mut bar) => {
-                bar.pb.set_total(size);
-            }
-            None => {}
-        }
+        self.total_bar.set_total(size);
     }
 
     pub fn load(&mut self, message: &str) {
-        match self.total_bar {
-            Some(ref mut bar) => {
-                bar.write(format!("{} {}", "LOAD ".colorize("bold yellow"), message));
+        match &mut self.total_bar {
+            Bar::Tty(_) => {
+                self.total_bar.write(&format!("{} {}", "LOAD ".colorize("bold yellow"), message));
             }
-            None => {
+            Bar::Notty(_) => {
                 println!("LOAD {}", message);
             }
         }
     }
 
     pub fn info(&mut self, message: &str) {
-        match self.total_bar {
-            Some(ref mut bar) => {
-                bar.write(format!("{} {}", "INFO ".colorize("bold blue"), message));
+        match &mut self.total_bar {
+            Bar::Tty(_) => {
+                self.total_bar.write(&format!("{} {}", "INFO ".colorize("bold blue"), message));
             }
-            None => {
+            Bar::Notty(_) => {
                 println!("INFO  {}", message);
             }
         }
     }
 
     pub fn build(&mut self, message: &str) {
-        match self.total_bar {
-            Some(ref mut bar) => {
-                bar.write(format!("{} {}", "BUILD".colorize("bold magenta"), message));
+        match &mut self.total_bar {
+            Bar::Tty(_) => {
+                self.total_bar.write(&format!("{} {}", "BUILD".colorize("bold magenta"), message));
             }
-            None => {
+            Bar::Notty(_) => {
                 println!("BUILD {}", message);
             }
         }
     }
 
-    pub fn error(&mut self, message: &str) {
-        match self.total_bar {
-            Some(ref mut bar) => {
-                bar.write(format!("{} {}", "ERROR".colorize("bold red"), message));
-            }
-            None => {
-                println!("ERROR {}", message);
-            }
-        }
-
-        std::process::exit(1);
-    }
-
     pub fn finish(&mut self) {
-        match self.total_bar {
-            Some(ref mut bar) => {
-                let elapsed = bar.pb.elapsed_time();
-                let elapsed = (elapsed * 100.0).round() / 100.0;
+        let elapsed = self.total_bar.elapsed_time();
+        let elapsed = (elapsed * 100.0).round() / 100.0;
 
-                bar.write(format!(
+        match &mut self.total_bar {
+            Bar::Tty(_) => {
+                self.total_bar.write(&format!(
                     "{} in {}s",
                     "DONE ".colorize("bold green"),
                     elapsed
                 ));
 
-                bar.clear();
+                self.total_bar.clear();
             }
-            None => {
-                println!("DONE");
+            Bar::Notty(_) => {
+                println!("DONE in {}s", elapsed);
             }
         }
     }
@@ -161,8 +232,6 @@ impl Logger {
 
 impl fmt::Debug for Logger {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(
-            &format!("<Logger>")
-        )
+        f.write_str(&format!("<Logger>"))
     }
 }
