@@ -1,5 +1,5 @@
-use crate::load::svg::SvgTree;
+use crate::load::svg::Svg;
 
-pub fn clean_svg(svg: &SvgTree) -> SvgTree {
+pub fn clean_svg(svg: &Svg) -> Svg {
     unimplemented!()
 }

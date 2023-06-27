@@ -1,4 +1,5 @@
-use resvg::usvg::{Options, Tree, TreeParsing};
+use rayon::prelude::*;
+use resvg::usvg::{Options, Tree, TreeParsing, TreeWriting, XmlOptions, Paint, Color};
 use std::{fmt, fs, path::PathBuf};
 use svgcleaner::{
     cleaner::{clean_doc, parse_data},
@@ -8,22 +9,15 @@ use svgcleaner::{
 use crate::load::Pack;
 
 #[derive(Clone)]
-pub struct SvgTree {
-    pub tree: Tree,
-    pub string: String,
-}
+pub struct Svg(pub String);
 
-impl fmt::Debug for SvgTree {
+impl fmt::Debug for Svg {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&format!(
-            "<SvgTree ({}x{})>",
-            self.tree.size.width(),
-            self.tree.size.height()
-        ))
+        f.write_str("<SvgTree>")
     }
 }
 
-impl SvgTree {
+impl Svg {
     fn from_path(path: &PathBuf) -> Self {
         match fs::read_to_string(path) {
             Ok(svg) => {
@@ -47,16 +41,7 @@ impl SvgTree {
                     ),
                 };
 
-                match Tree::from_str(&cleaned_string, &Options::default()) {
-                    Ok(tree) => Self {
-                        tree,
-                        string: cleaned_string,
-                    },
-                    Err(err) => panic!(
-                        "Error parsing (2 stage) SVG file at '{:?}' with error '{}'",
-                        path, err
-                    ),
-                }
+                Self(cleaned_string)
             }
             Err(err) => panic!(
                 "Error reading SVG file at '{:?}' with error '{}'",
@@ -65,17 +50,33 @@ impl SvgTree {
         }
     }
 
-    // pub fn replace_colors(&mut self, map: ) {
-    //     let mut new_tree = self.0.clone();
-    //     self.0 = new_tree;
-    // }
+    pub fn replace_colors(&mut self, map: Vec<(Color, Color)>) {
+        let tree = Tree::from_str(&self.0, &Options::default()).unwrap();
+
+        tree.paint_servers(|paint| {
+            match paint {
+                Paint::Color(color) => {
+                    let mut color = *color;
+
+                    for (from, to) in map.iter() {
+                        if color == *from {
+                            color = *to;
+                        }
+                    }
+                },
+                _ => {},
+            };
+        });
+
+        self.0 = tree.to_string(&XmlOptions::default());
+    }
 }
 
 impl Pack {
     pub fn load_svgs(&mut self) {
-        for emoji in &mut self.emojis {
-            let svg_tree = SvgTree::from_path(&emoji.src);
+        self.emojis.par_iter_mut().for_each(|emoji| {
+            let svg_tree = Svg::from_path(&emoji.src);
             emoji.svg = Some(svg_tree);
-        }
+        });
     }
 }

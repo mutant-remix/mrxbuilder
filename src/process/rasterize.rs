@@ -1,13 +1,15 @@
 use resvg::{
     render,
     tiny_skia::{Pixmap, Transform},
-    usvg::Tree,
+    usvg::{Tree, TreeParsing},
     FitTo,
 };
 
 use image::RgbaImage;
 
-pub fn rasterise_svg(tree: &Tree, size: u32) -> RgbaImage {
+pub fn rasterise_svg(svg: &str, size: u32) -> RgbaImage {
+    let tree = Tree::from_str(svg, &Default::default()).unwrap();
+
     let mut pixmap = Pixmap::new(size, size).unwrap();
     render(
         &tree,

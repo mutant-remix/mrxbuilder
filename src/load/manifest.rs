@@ -1,8 +1,8 @@
-use std::{collections::HashMap, fs, path::PathBuf};
 use image::Rgb;
+use std::{collections::HashMap, fs, path::PathBuf};
 
+use crate::load::{svg::Svg, Pack};
 use crate::process::{EncodeTarget, OxiPngMode};
-use crate::load::{Pack, svg::SvgTree};
 
 #[derive(Debug)]
 pub enum Container {
@@ -52,7 +52,7 @@ pub struct Colormap {
 #[derive(Debug, Clone)]
 pub struct Emoji {
     pub src: PathBuf,
-    pub svg: Option<SvgTree>,
+    pub svg: Option<Svg>,
     pub name: String,
     pub category: Vec<String>,
     pub description: String,
@@ -60,7 +60,6 @@ pub struct Emoji {
     pub codepoint: Option<Vec<String>>,
     pub shortcodes: Vec<String>,
     pub colormaps: Vec<String>,
-    pub colormap_entries: HashMap<Rgb<u8>, Rgb<u8>>,
 }
 
 impl Pack {
@@ -111,7 +110,10 @@ impl Pack {
 
                     let new_path = match new_path.canonicalize() {
                         Ok(new_path) => new_path,
-                        Err(err) => panic!("Could not find manifest at '{:?}' with error '{}' included in '{:?}'", new_path, err, manifest_path),
+                        Err(err) => panic!(
+                            "Could not find manifest at '{:?}' with error '{}' included in '{:?}'",
+                            new_path, err, manifest_path
+                        ),
                     };
 
                     queue.push(new_path);
@@ -361,7 +363,6 @@ impl Pack {
                         codepoint,
                         shortcodes,
                         colormaps,
-                        colormap_entries: HashMap::new(),
                     });
                 }
             }
