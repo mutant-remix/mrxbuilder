@@ -17,6 +17,13 @@ Check out the [docs](./docs/README.md) for more information.
 - Outputs artifacts in `tar.gz`, `zip` or a directory
 - Output metadata is generated in JSON
 
+## Future plans
+**Help wanted!**
+
+- Support for more formats
+- Support for fonts
+- Support for writing EXIF metadata
+
 ## Metadata
 - Input metadata is written in a simple, human-readable format using [toml](https://toml.io)
 > Read more about the metadata formats in the [docs](./docs/README.md)

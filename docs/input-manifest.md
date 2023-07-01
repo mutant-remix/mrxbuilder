@@ -30,12 +30,6 @@ There are only a few entry types:
 > `<>` denotes a user-defined value, otherwise it is a literal (don't include the `<>`)
 
 ## Entry types
-### Pack
-**WIP**
-
-```toml
-[pack]
-```
 ### Include
 The builder only directly loads a single manifest file, typically called `index.toml`. However, it can load other manifest files using `[include]` with the path to other manifest files, relative to the current manifest file. For example:
 
@@ -72,6 +66,7 @@ paths = [
     - `filenames`
         - `shortcode`
         - `codepoint`
+- `include_files` - array of paths to files to include in the output
 
 ```toml
 [[target]]
@@ -80,6 +75,7 @@ tags = [ "release" ]
 include_tags = [ "unicode", "extra" ]
 output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
 structure = { container = "tar.gz", subdirectories = true, filenames = "shortcode" }
+include_files = [ "./LICENSE" ]
 
 [[target]]
 name = "unicode-codepoint-svg"
@@ -87,6 +83,7 @@ tags = [ "debug", "release" ]
 include_tags = [ "unicode" ]
 output = { format = "svg" }
 structure = { container = "directory", subdirectories = false, filenames = "codepoint" }
+include_files = [ "./LICENSE" ]
 
 [[target]]
 name = "full-metadata"
@@ -94,6 +91,7 @@ tags = [ "metadata" ]
 include_tags = [ "unicode", "extra" ]
 output = { format = "none" }
 structure = { container = "directory", subdirectories = false, filenames = "shortcode" }
+include_files = [ "./LICENSE" ]
 ```
 
 ### Define
