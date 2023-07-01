@@ -1,10 +1,11 @@
 use rayon::prelude::*;
-use resvg::usvg::{Options, Tree, TreeParsing, TreeWriting, XmlOptions, Paint, Color};
+use resvg::usvg::Color;
 use std::{fmt, fs, path::PathBuf};
 use svgcleaner::{
     cleaner::{clean_doc, parse_data},
     CleaningOptions, ParseOptions, WriteOptions,
 };
+use regex::Regex;
 
 use crate::load::Pack;
 
@@ -51,24 +52,15 @@ impl Svg {
     }
 
     pub fn replace_colors(&mut self, map: Vec<(Color, Color)>) {
-        let tree = Tree::from_str(&self.0, &Options::default()).unwrap();
+        for (from, to) in map {
+            let from = format!("#{:02X}{:02X}{:02X}", from.red, from.green, from.blue);
+            let to = format!("#{:02X}{:02X}{:02X}", to.red, to.green, to.blue);
 
-        tree.paint_servers(|paint| {
-            match paint {
-                Paint::Color(color) => {
-                    let mut color = *color;
+            let regex_pattern = format!(r#"(?i){}"#, from);
+            let re = Regex::new(&regex_pattern).unwrap();
 
-                    for (from, to) in map.iter() {
-                        if color == *from {
-                            color = *to;
-                        }
-                    }
-                },
-                _ => {},
-            };
-        });
-
-        self.0 = tree.to_string(&XmlOptions::default());
+            self.0 = re.replace_all(&self.0, &to).to_string();
+        }
     }
 }
 
