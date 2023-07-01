@@ -1,5 +1,5 @@
 use rayon::prelude::*;
-use std::collections::HashMap;
+use std::{collections::HashMap, fs};
 
 pub mod encode;
 use encode::encode_raster;
@@ -9,7 +9,7 @@ use rasterize::rasterise_svg;
 
 pub mod cache;
 
-use crate::load::manifest::{OutputFormat, FilenameFormat};
+use crate::load::manifest::{OutputFormat, FilenameFormat, Container};
 use crate::Pack;
 
 impl Pack {
@@ -25,7 +25,7 @@ impl Pack {
             targets.len(),
             tag
         ));
-        self.logger.set_stage_count(self.targets.len() + 1);
+        self.logger.set_stage_count(self.targets.len() * 2 + 1);
 
         for target in targets {
             self.logger
@@ -61,12 +61,28 @@ impl Pack {
                     size,
                 } => {
                     let files = emojis.par_iter().map(|emoji| {
-                        let svg = &emoji.svg.as_ref().unwrap().0;
-
                         stage.clone().inc();
 
+                        let svg = &emoji.svg.as_ref().unwrap().0;
+
+                        let filename = match &target.output_structure.filenames {
+                            FilenameFormat::Codepoint => match emoji.to_codepoint_filename() {
+                                Some(filename) => filename,
+                                None => {
+                                    panic!("Target '{}' requires codepoint filename for emoji '{}', but it does not have a codepoint", target.name, emoji.name);
+                                }
+                            },
+                            FilenameFormat::Shortcode => match emoji.to_shortcode_filename(target.output_structure.subdirectories) {
+                                Some(filename) => filename,
+                                None => {
+                                    panic!("Target '{}' requires shortcode filename for emoji '{}', but it does not have a shortcode", target.name, emoji.name);
+                                }
+                            },
+                        };
+                        let filename = format!("{}.{}", filename, encode_target.to_extension());
+
                         match self.cache.try_get(svg, encode_target, *size) {
-                            Some(encoded) => (emoji.name.clone(), encoded),
+                            Some(encoded) => (filename, encoded),
                             None => {
                                 let raster = rasterise_svg(svg, *size);
                                 let encoded = encode_raster(&raster, encode_target);
@@ -77,21 +93,6 @@ impl Pack {
                                     *size,
                                     &encoded,
                                 );
-
-                                let filename = match &target.output_structure.filenames {
-                                    FilenameFormat::Codepoint => match emoji.to_codepoint_filename() {
-                                        Some(filename) => filename,
-                                        None => {
-                                            panic!("Target '{}' requires codepoint filename for emoji '{}', but it does not have a codepoint", target.name, emoji.name);
-                                        }
-                                    },
-                                    FilenameFormat::Shortcode => match emoji.to_shortcode_filename() {
-                                        Some(filename) => filename,
-                                        None => {
-                                            panic!("Target '{}' requires shortcode filename for emoji '{}', but it does not have a shortcode", target.name, emoji.name);
-                                        }
-                                    },
-                                };
 
                                 (filename, encoded)
                             }
@@ -111,13 +112,14 @@ impl Pack {
                                     panic!("Target '{}' requires codepoint filename for emoji '{}', but it does not have a codepoint", target.name, emoji.name);
                                 }
                             },
-                            FilenameFormat::Shortcode => match emoji.to_shortcode_filename() {
+                            FilenameFormat::Shortcode => match emoji.to_shortcode_filename(target.output_structure.subdirectories) {
                                 Some(filename) => filename,
                                 None => {
                                     panic!("Target '{}' requires shortcode filename for emoji '{}', but it does not have a shortcode", target.name, emoji.name);
                                 }
                             },
                         };
+                        let filename = format!("{}.svg", filename);
 
                         (
                             filename,
@@ -131,7 +133,46 @@ impl Pack {
                 OutputFormat::None => HashMap::new(),
             };
 
-            // write, including extra files
+            let stage = self.logger.new_stage("Writing", emojis.len());
+
+            match &target.output_structure.container {
+                Container::Directory => {
+                    let path = self.output_path.join(&target.name);
+
+                    match fs::remove_dir_all(&path) {
+                        Ok(_) => {}
+                        Err(err) => {
+                            if err.kind() != std::io::ErrorKind::NotFound {
+                                panic!("Failed to remove old directory '{}' while building target '{}': {}", path.display(), target.name, err);
+                            }
+                        }
+                    };
+
+                    for (filename, data) in files {
+                        let path = path.join(&filename);
+                        let dir = path.parent().unwrap();
+
+                        match fs::create_dir_all(dir) {
+                            Ok(_) => {}
+                            Err(err) => {
+                                panic!("Failed to create directory '{}' while building target '{}': {}", dir.display(), target.name, err);
+                            }
+                        };
+
+                        match fs::write(path, data) {
+                            Ok(_) => {}
+                            Err(err) => {
+                                panic!("Failed to write file '{}' while building target '{}': {}", filename, target.name, err);
+                            }
+                        };
+
+                        stage.clone().inc();
+                    }
+                }
+                Container::Zip => {
+                    unimplemented!();
+                }
+            }
         }
     }
 }
