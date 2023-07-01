@@ -13,17 +13,25 @@ use crate::load::manifest::{OutputFormat, FilenameFormat, Container};
 use crate::Pack;
 
 impl Pack {
-    pub fn build_tag(&mut self, tag: &str) {
+    pub fn build_tags(&mut self, tags: Vec<String>) {
         let targets = self
             .targets
             .iter()
-            .filter(|target| target.tags.contains(&tag.to_string()))
+            .filter(|target| {
+                for tag in tags.iter() {
+                    if target.tags.contains(tag) {
+                        return true;
+                    }
+                }
+
+                return false;
+            })
             .collect::<Vec<_>>();
 
         self.logger.info(&format!(
             "Selected {} targets tagged '{}'",
             targets.len(),
-            tag
+            tags.join(", ")
         ));
         self.logger.set_stage_count(self.targets.len() * 2 + 1);
 

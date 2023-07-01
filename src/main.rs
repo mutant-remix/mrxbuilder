@@ -16,6 +16,8 @@ fn main() {
     logger.register_panic_hook();
     logger.set_stage_count(1);
 
+    logger.info(&format!("Using {} CPUs", num_cpus::get() as u64));
+
     let mut args = env::args();
     args.nth(0);
 
@@ -47,13 +49,8 @@ fn main() {
 
     let mut pack = Pack::new(logger, output_path);
 
-    pack.logger.info(&format!("Using {} CPUs", num_cpus::get() as u64));
-
     pack.load_all(&manifest_path);
-
-    for tag in tags {
-        pack.build_tag(&tag);
-    }
+    pack.build_tags(tags);
 
     pack.logger.finish()
 }
