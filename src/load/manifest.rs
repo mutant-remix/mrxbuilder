@@ -6,7 +6,6 @@ use crate::process::encode::{EncodeTarget, OxiPngMode};
 #[derive(Clone, Debug)]
 pub enum Container {
     Directory,
-    TarGz,
     Zip,
 }
 
@@ -72,6 +71,7 @@ impl Emoji {
                     filename.push_str(&codepoint);
                     filename.push('_');
                 });
+                filename.pop();
 
                 Some(filename)
             }
@@ -79,9 +79,20 @@ impl Emoji {
         }
     }
 
-    pub fn to_shortcode_filename(&self) -> Option<String> {
+    pub fn to_shortcode_filename(&self, subdirectories: bool) -> Option<String> {
         match self.shortcodes.first() {
-            Some(shortcode) => Some(shortcode.clone()),
+            Some(shortcode) => {
+                let mut filename = String::new();
+
+                if subdirectories {
+                    filename.push_str(&self.category.join("/"));
+                    filename.push('/');
+                }
+
+                filename.push_str(shortcode);
+
+                Some(filename)
+            },
             None => None,
         }
     }
@@ -448,7 +459,6 @@ impl Pack {
 
                             let container = match structure.get("container") {
                                 Some(container) => match container.as_str().unwrap() {
-                                    "tar.gz" => Container::TarGz,
                                     "zip" => Container::Zip,
                                     "directory" => Container::Directory,
                                     _ => panic!("Target contains unknown 'structure.container' '{}' in {:?}", container, manifest_path),

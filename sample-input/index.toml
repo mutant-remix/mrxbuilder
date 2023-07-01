@@ -21,7 +21,7 @@ name = "unicode-codepoint-png-128"
 tags = [ "release" ]
 include_tags = [ "unicode" ]
 output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
-structure = { container = "tar.gz", subdirectories = false, filenames = "codepoint" }
+structure = { container = "directory", subdirectories = false, filenames = "codepoint" }
 include_files = [ "./LICENSE" ]
 
 [[target]]
@@ -29,7 +29,7 @@ name = "full-shortcode-webp-512"
 tags = [ "release" ]
 include_tags = [ "unicode", "extra" ]
 output = { format = "webp", size = 512 }
-structure = { container = "tar.gz", subdirectories = true, filenames = "shortcode" }
+structure = { container = "directory", subdirectories = true, filenames = "shortcode" }
 include_files = [ "./LICENSE" ]
 
 [[target]]

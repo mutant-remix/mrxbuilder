@@ -45,9 +45,8 @@ paths = [
 - `tags`: Used when calling the builder to select which targets to build.
 - `output`:
     - `container`
-        - `tar.gz`
-        - `zip`
         - `directory`
+        - `zip`
     - `format`:
         - No images: `none` - used for metadata-only targets
         - Vector images: `svg` - skips rasterization
