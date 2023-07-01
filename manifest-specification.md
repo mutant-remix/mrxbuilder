@@ -1,14 +1,13 @@
 # Manifest
-This is the specification for the builder's input manifest files, which also acts as the documentation for writing them. It is example-based and hopefully self-explanatory in most cases.
+This is the specification for mrxbuilder's input manifest files, which also acts as the documentation. It is example-based and hopefully self-explanatory in most cases.
 
 ## Examples
-You can find examples utilising every feature in [sample-input](/sample-input) and below.
+You can find examples utilising every feature in [sample-input](./sample-input) and below.
 
 ## Overview
 The builder's manifests are written in [toml](https://toml.io).
 
-There are only a few entry types:
-- [Pack](#pack) - **WIP**
+There are only a 5 entry types:
 - [Include](#include) - Loads other manifest files
 - [Target](#target) - Defines various outputs to build
 - [Define](#define) - Defines variables for use in other parts of the manifest
@@ -18,7 +17,7 @@ There are only a few entry types:
 ## Notes
 Paths are relative to each manifest file.
 
-## Types
+## Literals and variables
 - `#<abcdef>` - RGB hex color
 - `U+<1234>` - Unicode codepoint
 - `$<name>` - Variable name
@@ -43,13 +42,13 @@ paths = [
 ```
 
 ### Target
-- `tags`: Used when calling the builder to select which targets to build.
+- `tags`: Used when calling mrxbuilder to select which targets to build.
 - `output`:
     - `container`
         - `directory`
         - `zip`
     - `format`:
-        - No images: `none` - used for metadata-only targets
+        - No images: `none` - used for metadata-only builds
         - Vector images: `svg` - skips rasterization
         - Raster images:
             Format name | Compression levels | Size | Compatibility | Notes
@@ -62,10 +61,12 @@ paths = [
     - `size` (number) - only for raster images
     - `compression` (number) - for applicable formats
 - `structure`
-    - `subdirectories` (bool) - whether to organise emojis into subdirectories by category
     - `filenames`
-        - `shortcode`
-        - `codepoint`
+        - `shortcode` - use the first shortcode as the filename
+        - `codepoint` - use the full codepoint as the filename
+    - `subdirectories` - only for `shortcode` filenames
+        - `true` - organise emojis into subdirectories by category
+        - `false` - all emojis in the same directory
 - `include_files` - array of paths to files to include in the output
 
 ```toml
@@ -103,9 +104,9 @@ The `name` of the variable must start with `$`.
 
 `$` variables will only get resolved in:
 - `colormap` entry keys and values
-- `colormap.codeoint`
-- `emoji.codepoint`
-- `emoji.colormaps`
+- `colormap.codepoint` (**not** expanded)
+- `emoji.codepoint` (expanded)
+- `emoji.colormaps` (expanded)
 
 ```toml
 # Often repeated codepoints
@@ -125,9 +126,9 @@ The `name` of the variable must start with `$`.
 ```
 
 ### Colormap
-`label`, `shortcode` and `codepoint` are only required when an emoji uses those variables
+`label`, `shortcode` and `codepoint` are only required when an emoji uses those variables, otherwise the build will fail.
 
-The `name` of the colormap must start with `%`.
+The `name` of the colormap must start with `%`
 
 ```toml
 # Skin tone modifier
@@ -149,16 +150,19 @@ description = "The flag of Lithuania"
 ```
 
 ### Emoji
-- `name`, `description`, `category` - used for metadata
-- `codepoint`: single codepoint split into parts
-- `shortcodes`: list of shortcodes
-- `tags`: used in targets to select which emojis to include in that target
-- `src`: path to the svg file, relative to the manifest file
-- `colormaps` create multiple emoji entries, one for each colormap. `%label`, `%shortcode`, `%codepoint`, `%description` will be replaced, and the svg will be recolored with the colormap's entries.
+- `name`, `description`, `category` - used for metadata and structure
+- `codepoint`: single codepoint split into parts.
+> If `structure.filenames` is `codepoint`, this will be used as the filename, with `U+` stripped and joined with `_`
+- `shortcodes`: list of shortcodes.
+> The first one will be used as the filename if `structure.filenames` is `shortcode`
+- `tags`: used to select which targets this emoji will be built for
+- `src`: path to the svg file, **relative to the manifest file**
+- `colormaps` create multiple emoji entries, one for each colormap.
+> `%label`, `%shortcode`, `%codepoint`, `%description` will be replaced, and the svg will be recolored with the colormap's entries.
 
 > If emojis have overlapping tags, they can't have overlapping names and labels
 
-> If an emoji has multiple colormaps, `name`, `shortcodes` and `codepoint` must use variables
+> If an emoji has multiple colormaps, `name`, `shortcodes` and `codepoint` must use `%` variables to avoid name collisions
 
 ```toml
 # Face
