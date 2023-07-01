@@ -35,7 +35,7 @@ impl EncodeTarget {
     }
 }
 
-pub fn encode_raster(raster: &RgbaImage, size: u32, target: &EncodeTarget) -> Vec<u8> {
+pub fn encode_raster(raster: &RgbaImage, target: &EncodeTarget) -> Vec<u8> {
     match target {
         EncodeTarget::PngOxipng(oxipng_mode) => match oxipng_mode {
             OxiPngMode::Libdeflater(compression) => {

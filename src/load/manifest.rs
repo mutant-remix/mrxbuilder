@@ -61,6 +61,32 @@ pub struct Emoji {
     pub colormaps: Vec<String>,
 }
 
+impl Emoji {
+    pub fn to_codepoint_filename(&self) -> Option<String> {
+        match self.codepoint {
+            Some(ref codepoints) => {
+                let mut filename = String::new();
+
+                codepoints.iter().for_each(|codepoint| {
+                    let codepoint = codepoint.replace("U+", "");
+                    filename.push_str(&codepoint);
+                    filename.push('_');
+                });
+
+                Some(filename)
+            }
+            None => None,
+        }
+    }
+
+    pub fn to_shortcode_filename(&self) -> Option<String> {
+        match self.shortcodes.first() {
+            Some(shortcode) => Some(shortcode.clone()),
+            None => None,
+        }
+    }
+}
+
 impl Pack {
     fn load_manifest(path: &PathBuf) -> toml::Value {
         let toml = match fs::read_to_string(path) {

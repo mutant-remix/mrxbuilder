@@ -15,7 +15,10 @@ impl Cache {
         let hash = md5::compute(format!("{}-{:?}-{}", svg, format, size));
         let hash = format!("{:x}", hash);
 
-        match fs::read(self.path.join(hash)) {
+        let mut path = self.path.join(hash);
+        path.set_extension(format.to_extension());
+
+        match fs::read(path) {
             Ok(data) => Some(data),
             Err(_) => None,
         }
@@ -30,7 +33,10 @@ impl Cache {
         let hash = md5::compute(format!("{}-{:?}-{}", svg, format, size));
         let hash = format!("{:x}", hash);
 
-        match fs::write(self.path.join(hash), raster) {
+        let mut path = self.path.join(hash);
+        path.set_extension(format.to_extension());
+
+        match fs::write(path, raster) {
             Ok(_) => {},
             Err(err) => panic!("Failed to write cache file: {}", err),
         }
