@@ -139,36 +139,18 @@ impl Logger {
         let bar = Mutex::new(self.total_bar.clone());
 
         panic::set_hook(Box::new(move |panic_info| {
-            let error = panic_info.payload().downcast_ref::<&str>();
+            let error = panic_info.to_string();
             let mut bar = bar.lock().unwrap();
 
-            match error {
-                Some(err) => {
-                    match bar.to_owned() {
-                        Bar::Tty(_) => {
-                            bar.write(&format!("{} {}", "FATAL".colorize("bold red"), err));
-                            bar.clear();
-                        }
-                        Bar::Notty(_) => {
-                            println!("FATAL {}", err);
-                        }
-                    }
-                },
-                None => {
-                    match bar.to_owned() {
-                        Bar::Tty(_) => {
-                            bar.write(&format!(
-                                "{} mrxbuilder panicked with no error message",
-                                "FATAL".colorize("bold red")
-                            ));
-                            bar.clear();
-                        }
-                        Bar::Notty(_) => {
-                            println!("FATAL mrxbuilder panicked with no error message");
-                        }
-                    }
-                },
-            };
+            match bar.to_owned() {
+                Bar::Tty(_) => {
+                    bar.write(&format!("{} {}", "FATAL".colorize("bold red"), error));
+                    bar.clear();
+                }
+                Bar::Notty(_) => {
+                    println!("FATAL {}", error);
+                }
+            }
         }));
     }
 
