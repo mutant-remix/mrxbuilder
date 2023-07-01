@@ -1,4 +1,5 @@
-use crate::load::{Emoji, Pack};
+use crate::load::Emoji;
+use crate::Pack;
 use resvg::usvg::Color;
 
 fn parse_hex_str(hex_str: &str) -> Color {

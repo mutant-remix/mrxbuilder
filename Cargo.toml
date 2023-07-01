@@ -24,3 +24,4 @@ oxipng = { git = "https://github.com/shssoichiro/oxipng" }
 tar = "0.4.38"
 atty = "0.2.14"
 kdam = "0.3.0"
+md5 = "0.7.0"

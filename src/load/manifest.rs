@@ -1,37 +1,36 @@
-use image::Rgb;
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use crate::load::{svg::Svg, Pack};
-use crate::process::{EncodeTarget, OxiPngMode};
+use crate::process::encode::{EncodeTarget, OxiPngMode};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Container {
     Directory,
     TarGz,
     Zip,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum FilenameFormat {
     Shortcode,
     Codepoint,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct OutputStructure {
     pub container: Container,
     pub filenames: FilenameFormat,
     pub subdirectories: bool,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum OutputFormat {
     None,
     Svg,
     Raster { format: EncodeTarget, size: u32 },
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Target {
     pub name: String,
     pub tags: Vec<String>,
@@ -40,7 +39,7 @@ pub struct Target {
     pub output_format: OutputFormat,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Colormap {
     pub label: Option<String>,
     pub shortcode: Option<String>,

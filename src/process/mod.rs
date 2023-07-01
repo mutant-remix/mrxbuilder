@@ -1,62 +1,76 @@
-mod clean;
-use crate::load::svg::Svg;
-use clean::clean_svg;
+use rayon::prelude::*;
+
+pub mod encode;
+use encode::encode_raster;
 
 mod rasterize;
 use rasterize::rasterise_svg;
 
-mod encode;
-use core::num::NonZeroU8;
-use encode::{avif, png_image, png_oxipng, webp};
-use oxipng::Deflaters;
+pub mod cache;
 
-#[derive(Debug)]
-pub enum OxiPngMode {
-    Libdeflater(u8), // 0-12
-    Zopfli(u8),      // 0-15
-}
+use crate::Pack;
+use crate::load::manifest::{OutputFormat};
 
-#[derive(Debug)]
-pub enum EncodeTarget {
-    PngImage,
-    PngOxipng(OxiPngMode),
-    Avif {
-        quality: f32, // 100.0-0.0
-        speed: u8,    // 1-10
-    },
-    Webp,
-}
+impl Pack {
+    pub fn build_tag(&mut self, tag: &str) {
+        let targets = self
+            .targets
+            .iter()
+            .filter(|target| target.tags.contains(&tag.to_string()))
+            .collect::<Vec<_>>();
 
-impl EncodeTarget {
-    pub fn to_extension(&self) -> &'static str {
-        match self {
-            EncodeTarget::PngImage => "png",
-            EncodeTarget::PngOxipng(_) => "png",
-            EncodeTarget::Avif { .. } => "avif",
-            EncodeTarget::Webp => "webp",
+        self.logger.info(&format!("Selected {} targets tagged '{}'", targets.len(), tag));
+        self.logger.set_stage_count(self.targets.len() + 1);
+
+        for target in targets {
+            self.logger.build(&format!("Building target '{}'", target.name));
+
+            let emojis = self
+                .emojis
+                .iter()
+                .filter(|emoji| {
+                    for tag in target.include_tags.iter() {
+                        if emoji.tags.contains(tag) { return true; }
+                    }
+
+                    return false;
+                })
+                .collect::<Vec<_>>();
+
+            self.logger.build(&format!("Selected {} emojis for target '{}'", emojis.len(), target.name));
+            let stage = self.logger.new_stage("Encoding", emojis.len());
+
+            match &target.output_format {
+                OutputFormat::Raster { format: encode_target, size } => {
+                    let encoded: Vec<Vec<u8>> = emojis.par_iter().map(|emoji| {
+                        let svg = &emoji.svg.as_ref().unwrap().0;
+
+                        stage.clone().inc();
+
+                        match self.cache.try_get(svg, encode_target, *size) {
+                            Some(encoded) => encoded,
+                            None => {
+                                let raster = rasterise_svg(svg, *size);
+                                let encoded = encode_raster(&raster, *size, encode_target);
+
+                                self.cache.save(&emoji.svg.as_ref().unwrap().0, encode_target, *size, &raster.as_raw());
+
+                                encoded
+                            }
+                        }
+                    }).collect();
+                }
+                OutputFormat::Svg => {
+
+                }
+                OutputFormat::None => {}
+            };
+
+            // todo: metadata
+
+            // include extra files
+
+            // write to container
         }
-    }
-}
-
-type Raster = Vec<u8>;
-pub fn encode_svg(svg: &Svg, size: u32, target: EncodeTarget) -> Raster {
-    let svg = clean_svg(svg);
-    let raster = rasterise_svg(&svg.0, size);
-
-    match target {
-        EncodeTarget::PngOxipng(oxipng_mode) => match oxipng_mode {
-            OxiPngMode::Libdeflater(compression) => {
-                png_oxipng::encode(&raster, Deflaters::Libdeflater { compression })
-            }
-            OxiPngMode::Zopfli(iterations) => png_oxipng::encode(
-                &raster,
-                Deflaters::Zopfli {
-                    iterations: NonZeroU8::new(iterations).unwrap(),
-                },
-            ),
-        },
-        EncodeTarget::PngImage => png_image::encode(&raster),
-        EncodeTarget::Avif { quality, speed } => avif::encode(&raster, quality, speed),
-        EncodeTarget::Webp => webp::encode(&raster),
     }
 }

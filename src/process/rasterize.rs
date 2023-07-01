@@ -7,8 +7,8 @@ use resvg::{
 
 use image::RgbaImage;
 
-pub fn rasterise_svg(svg: &str, size: u32) -> RgbaImage {
-    let tree = Tree::from_str(svg, &Default::default()).unwrap();
+pub fn rasterise_svg(svg: &String, size: u32) -> RgbaImage {
+    let tree = Tree::from_str(&svg, &Default::default()).unwrap();
 
     let mut pixmap = Pixmap::new(size, size).unwrap();
     render(

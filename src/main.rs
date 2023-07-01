@@ -1,7 +1,9 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, fs, env};
+
+mod pack;
+use pack::Pack;
 
 mod load;
-use load::Pack;
 
 mod logger;
 use logger::Logger;
@@ -14,12 +16,44 @@ fn main() {
     logger.register_panic_hook();
     logger.set_stage_count(1);
 
-    logger.info(&format!("Using {} CPUs", num_cpus::get() as u64));
+    let mut args = env::args();
+    args.nth(0);
 
-    let mut pack = Pack::new(logger);
+    let manifest_path = match args.nth(0) {
+        Some(path) => PathBuf::from(path),
+        None => {
+            panic!("Missing input manifest path. Usage: <input manifest> <output directory> <tag1,tag2>");
+        }
+    };
+    let output_path = match args.nth(0) {
+        Some(path) => {
+            match fs::create_dir_all(&path) {
+                Ok(_) => {},
+                Err(err) => panic!("Failed to create output directory: {}", err),
+            };
 
-    pack.load_all(&PathBuf::from("./sample-input/index.toml"));
-    pack.build_all();
+            PathBuf::from(path)
+        },
+        None => {
+            panic!("Missing output directory path. Usage: <input manifest> <output directory> <tag1,tag2>");
+        }
+    };
+    let tags = match args.nth(0) {
+        Some(tags) => tags.split(',').map(|s| s.to_string()).collect::<Vec<_>>(),
+        None => {
+            panic!("Missing tags. Usage: <input manifest> <output directory> <tag1,tag2>");
+        }
+    };
+
+    let mut pack = Pack::new(logger, output_path);
+
+    pack.logger.info(&format!("Using {} CPUs", num_cpus::get() as u64));
+
+    pack.load_all(&manifest_path);
+
+    for tag in tags {
+        pack.build_tag(&tag);
+    }
 
     pack.logger.finish()
 }
