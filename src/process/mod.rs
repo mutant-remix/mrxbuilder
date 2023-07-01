@@ -133,7 +133,7 @@ impl Pack {
                 OutputFormat::None => HashMap::new(),
             };
 
-            let stage = self.logger.new_stage("Writing", emojis.len());
+            let stage = self.logger.new_stage("Writing", emojis.len() + target.include_files.len());
 
             match &target.output_structure.container {
                 Container::Directory => {
@@ -168,8 +168,31 @@ impl Pack {
 
                         stage.clone().inc();
                     }
+
+                    for file in target.include_files.iter() {
+                        let filename = match file.file_name() {
+                            Some(filename) => filename.to_str().unwrap(),
+                            None => {
+                                panic!("Failed to get filename for file '{}' while building target '{}'", file.display(), target.name);
+                            }
+                        };
+
+                        let path = path.join(filename);
+
+                        match fs::copy(file, path) {
+                            Ok(_) => {}
+                            Err(err) => {
+                                panic!("Failed to copy file '{}' while building target '{}': {}", filename, target.name, err);
+                            }
+                        };
+
+                        stage.clone().inc();
+                    }
+
+                    // TODO: metadata
                 }
                 Container::Zip => {
+                    // TODO
                     unimplemented!();
                 }
             }

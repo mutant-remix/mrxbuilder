@@ -15,16 +15,17 @@ There are only a few entry types:
 - [Colormap](#colormap) - Defines a colormap to be used in emojis to avoid most repetition
 - [Emoji](#emoji) - Defines an emoji
 
-## References
-`name`, `label`, `shortcode` and `codepoint` are reserved and may not be defined as variable names.
+## Notes
+Paths are relative to each manifest file.
 
+## Types
 - `#<abcdef>` - RGB hex color
 - `U+<1234>` - Unicode codepoint
 - `$<name>` - Variable name
 - `%` - Colormaps:
     - `%<name>` - Colormap name
     - `%label` - Colormap label (for example, skin tone modifiers)
-    - `%shortcode` exactly - Colormap shortcode (for example, `circle%shortcode`)
+    - `%shortcode` - Colormap shortcode (for example, `circle%shortcode`)
     - `%codepoint` - Colormap codepoint (for example, skin tone modifiers)
 
 > `<>` denotes a user-defined value, otherwise it is a literal (don't include the `<>`)
@@ -61,7 +62,7 @@ paths = [
     - `size` (number) - only for raster images
     - `compression` (number) - for applicable formats
 - `structure`
-    - `subdirectories` (bool)
+    - `subdirectories` (bool) - whether to organise emojis into subdirectories by category
     - `filenames`
         - `shortcode`
         - `codepoint`

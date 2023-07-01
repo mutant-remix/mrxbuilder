@@ -36,6 +36,7 @@ pub struct Target {
     pub include_tags: Vec<String>,
     pub output_structure: OutputStructure,
     pub output_format: OutputFormat,
+    pub include_files: Vec<PathBuf>,
 }
 
 #[derive(Clone, Debug)]
@@ -92,7 +93,7 @@ impl Emoji {
                 filename.push_str(shortcode);
 
                 Some(filename)
-            },
+            }
             None => None,
         }
     }
@@ -596,12 +597,41 @@ impl Pack {
                         None => panic!("Target is missing 'format' in {:?}", manifest_path),
                     };
 
+                    let include_files = match target.get("include_files") {
+                        Some(include_files) => match include_files.as_array() {
+                            Some(include_files) => include_files
+                                .iter()
+                                .map(|file| {
+                                    let mut full_path = manifest_path.clone();
+                                    full_path.pop();
+
+                                    full_path.push(match file.as_str() {
+                                        Some(file) => file,
+                                        None => panic!("Include_files path is not a string in target '{}' in {:?}", name, manifest_path),
+                                    });
+
+                                    match full_path.canonicalize() {
+                                        Ok(full_path) => full_path,
+                                        Err(err) => panic!("Could not find include_files file '{:?}' with error '{}' for target '{}' in '{:?}'", full_path, err, name, manifest_path),
+                                    }
+                                })
+                                .collect(),
+                            None => panic!(
+                                "Target '{}' contains invalid 'include_files' in {:?}",
+                                name,
+                                manifest_path
+                            ),
+                        },
+                        None => vec![],
+                    };
+
                     self.targets.push(Target {
                         name,
                         tags,
                         include_tags,
                         output_structure,
                         output_format,
+                        include_files,
                     });
                 }
             }
