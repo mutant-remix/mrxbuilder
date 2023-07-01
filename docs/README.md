@@ -1,3 +1,0 @@
-- [Usage](./usage.md) - how to compile and/or run the builder from the command line
-- [Input manifest](./input-manifest.md) - `toml` manifest used to define the emojis, targets etc.
-- Output metadata is generated in the [Google fonts emoji metadata format](https://github.com/googlefonts/emoji-metadata)
