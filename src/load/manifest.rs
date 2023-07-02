@@ -19,7 +19,7 @@ pub enum FilenameFormat {
 pub struct OutputStructure {
     pub container: Container,
     pub filenames: FilenameFormat,
-    pub subdirectories: bool,
+    pub flat: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -62,15 +62,24 @@ pub struct Emoji {
 }
 
 impl Emoji {
-    pub fn to_codepoint_filename(&self) -> Option<String> {
+    pub fn to_codepoint_filename(&self, flat: bool) -> Option<String> {
         match self.codepoint {
             Some(ref codepoints) => {
                 let mut filename = String::new();
 
+                if !flat {
+                    filename.push_str(&self.category.join("/"));
+                    filename.push('/');
+                }
+
                 codepoints.iter().for_each(|codepoint| {
-                    let codepoint = codepoint.replace("U+", "");
+                    let codepoint = match u32::from_str_radix(&codepoint.replace("U+", ""), 16) {
+                        Ok(codepoint) => codepoint.to_string(),
+                        Err(err) => panic!("Error parsing codepoint '{}' as hex while generating codepoint filename: {}", codepoint, err),
+                    };
+
                     filename.push_str(&codepoint);
-                    filename.push('_');
+                    filename.push('-');
                 });
                 filename.pop();
 
@@ -80,12 +89,12 @@ impl Emoji {
         }
     }
 
-    pub fn to_shortcode_filename(&self, subdirectories: bool) -> Option<String> {
+    pub fn to_shortcode_filename(&self, flat: bool) -> Option<String> {
         match self.shortcodes.first() {
             Some(shortcode) => {
                 let mut filename = String::new();
 
-                if subdirectories {
+                if !flat {
                     filename.push_str(&self.category.join("/"));
                     filename.push('/');
                 }
@@ -476,18 +485,18 @@ impl Pack {
                                 _ => panic!("Target is missing 'structure.filenames' in {:?}", manifest_path),
                             };
 
-                            let subdirectories = match structure.get("subdirectories") {
-                                Some(subdirectories) =>
-                                    subdirectories
+                            let flat = match structure.get("flat") {
+                                Some(flat) =>
+                                    flat
                                     .as_bool()
-                                    .expect(&format!("Target contains invalid 'structure.subdirectories' '{}' in {:?}", subdirectories, manifest_path)),
-                                None => panic!("Target is missing 'structure.subdirectories' in {:?}", manifest_path),
+                                    .expect(&format!("Target contains invalid 'structure.flat' '{}' in {:?}", flat, manifest_path)),
+                                None => panic!("Target is missing 'structure.flat' in {:?}", manifest_path),
                             };
 
                             OutputStructure {
                                 container,
                                 filenames,
-                                subdirectories,
+                                flat,
                             }
                         }
                         None => panic!("Target is missing 'structure' in {:?}", manifest_path),

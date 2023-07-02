@@ -1,5 +1,5 @@
 use rayon::prelude::*;
-use std::{collections::HashMap, fs};
+use std::fs;
 
 pub mod encode;
 use encode::encode_raster;
@@ -9,8 +9,17 @@ use rasterize::rasterise_svg;
 
 pub mod cache;
 
-use crate::load::manifest::{OutputFormat, FilenameFormat, Container};
+mod package;
+use package::Package;
+
+use crate::load::manifest::{OutputFormat, FilenameFormat, Emoji};
 use crate::Pack;
+
+struct EmojiEncoded {
+    emoji: Emoji,
+    raster: Option<Vec<u8>>,
+    filename: Option<String>,
+}
 
 impl Pack {
     pub fn build_tags(&mut self, tags: Vec<String>) {
@@ -39,7 +48,7 @@ impl Pack {
             self.logger
                 .build(&format!("Building target '{}'", target.name));
 
-            let emojis = self
+            let mut emojis: Vec<EmojiEncoded> = self
                 .emojis
                 .iter()
                 .filter(|emoji| {
@@ -51,6 +60,11 @@ impl Pack {
 
                     return false;
                 })
+                .map(|emoji| EmojiEncoded {
+                    emoji: emoji.clone(),
+                    raster: None,
+                    filename: None,
+                })
                 .collect::<Vec<_>>();
 
             self.logger.build(&format!(
@@ -60,149 +74,114 @@ impl Pack {
             ));
             let stage = self.logger.new_stage("Encoding", emojis.len());
 
-            // TODO: Generate metadata
+            // Encode and generate filenames
+            emojis.par_iter_mut().for_each(|emoji| {
+                let svg = &emoji.emoji.svg.as_ref().unwrap().0;
 
-            // Encode
-            let files = match &target.output_format {
-                OutputFormat::Raster {
-                    format: encode_target,
-                    size,
-                } => {
-                    let files = emojis.par_iter().map(|emoji| {
-                        stage.clone().inc();
-
-                        let svg = &emoji.svg.as_ref().unwrap().0;
-
-                        let filename = match &target.output_structure.filenames {
-                            FilenameFormat::Codepoint => match emoji.to_codepoint_filename() {
-                                Some(filename) => filename,
-                                None => {
-                                    panic!("Target '{}' requires codepoint filename for emoji '{}', but it does not have a codepoint", target.name, emoji.name);
-                                }
-                            },
-                            FilenameFormat::Shortcode => match emoji.to_shortcode_filename(target.output_structure.subdirectories) {
-                                Some(filename) => filename,
-                                None => {
-                                    panic!("Target '{}' requires shortcode filename for emoji '{}', but it does not have a shortcode", target.name, emoji.name);
-                                }
-                            },
-                        };
-                        let filename = format!("{}.{}", filename, encode_target.to_extension());
-
-                        match self.cache.try_get(svg, encode_target, *size) {
-                            Some(encoded) => (filename, encoded),
+                let encoded = match &target.output_format {
+                    OutputFormat::Raster { format, size } => {
+                        match self.cache.try_get(svg, &format, *size) {
+                            Some(encoded) => Some(encoded),
                             None => {
                                 let raster = rasterise_svg(svg, *size);
-                                let encoded = encode_raster(&raster, encode_target);
+                                let encoded = encode_raster(&raster, &format);
 
                                 self.cache.save(
-                                    &emoji.svg.as_ref().unwrap().0,
-                                    encode_target,
+                                    &svg,
+                                    &format,
                                     *size,
                                     &encoded,
                                 );
 
-                                (filename, encoded)
+                                Some(encoded)
                             }
                         }
-                    });
+                    },
+                    OutputFormat::Svg => None,
+                    OutputFormat::None => None,
+                };
 
-                    let files: HashMap<String, Vec<u8>> = files.collect();
-
-                    files
-                }
-                OutputFormat::Svg => {
-                    let files = emojis.iter().map(|emoji| {
-                        let filename = match &target.output_structure.filenames {
-                            FilenameFormat::Codepoint => match emoji.to_codepoint_filename() {
-                                Some(filename) => filename,
-                                None => {
-                                    panic!("Target '{}' requires codepoint filename for emoji '{}', but it does not have a codepoint", target.name, emoji.name);
-                                }
-                            },
-                            FilenameFormat::Shortcode => match emoji.to_shortcode_filename(target.output_structure.subdirectories) {
-                                Some(filename) => filename,
-                                None => {
-                                    panic!("Target '{}' requires shortcode filename for emoji '{}', but it does not have a shortcode", target.name, emoji.name);
-                                }
-                            },
-                        };
-                        let filename = format!("{}.svg", filename);
-
-                        (
-                            filename,
-                            emoji.svg.as_ref().unwrap().0.as_bytes().to_vec(),
-                        )
-                    });
-                    let files: HashMap<String, Vec<u8>> = files.collect();
-
-                    files
-                }
-                OutputFormat::None => HashMap::new(),
-            };
-
-            let stage = self.logger.new_stage("Writing", emojis.len() + target.include_files.len());
-
-            match &target.output_structure.container {
-                Container::Directory => {
-                    let path = self.output_path.join(&target.name);
-
-                    match fs::remove_dir_all(&path) {
-                        Ok(_) => {}
-                        Err(err) => {
-                            if err.kind() != std::io::ErrorKind::NotFound {
-                                panic!("Failed to remove old directory '{}' while building target '{}': {}", path.display(), target.name, err);
-                            }
+                let filename = match &target.output_structure.filenames {
+                    FilenameFormat::Codepoint => match emoji.emoji.to_codepoint_filename(target.output_structure.flat) {
+                        Some(filename) => filename,
+                        None => {
+                            panic!("Target '{}' requires codepoint filename for emoji '{}', but it does not have a codepoint", target.name, emoji.emoji.name);
                         }
-                    };
+                    },
+                    FilenameFormat::Shortcode => match emoji.emoji.to_shortcode_filename(target.output_structure.flat) {
+                        Some(filename) => filename,
+                        None => {
+                            panic!("Target '{}' requires shortcode filename for emoji '{}', but it does not have a shortcode", target.name, emoji.emoji.name);
+                        }
+                    },
+                };
 
-                    for (filename, data) in files {
-                        let path = path.join(&filename);
-                        let dir = path.parent().unwrap();
+                stage.clone().inc();
 
-                        match fs::create_dir_all(dir) {
-                            Ok(_) => {}
-                            Err(err) => {
-                                panic!("Failed to create directory '{}' while building target '{}': {}", dir.display(), target.name, err);
-                            }
-                        };
+                emoji.raster = encoded;
+                emoji.filename = Some(filename);
+            });
 
-                        match fs::write(path, data) {
-                            Ok(_) => {}
-                            Err(err) => {
-                                panic!("Failed to write file '{}' while building target '{}': {}", filename, target.name, err);
-                            }
-                        };
+            // Generate metadata
+            for emoji in &emojis {
+                // TODO
+            }
 
-                        stage.clone().inc();
+            let mut stage = self.logger.new_stage("Writing", emojis.len() + target.include_files.len());
+
+            let path = self.output_path.join(&target.name);
+            let mut package = Package::new(&target.output_structure.container, &path);
+
+            // Write emojis
+            for emoji in &emojis {
+                match &target.output_format {
+                    OutputFormat::None => {},
+                    OutputFormat::Svg => {
+                        let mut filename = emoji.filename.as_ref().unwrap().clone();
+                        filename.push_str(".svg");
+
+                        package.add_file(
+                            &emoji.emoji.svg.as_ref().unwrap().0.as_bytes().to_vec(),
+                            &filename
+                        );
                     }
+                    OutputFormat::Raster { format, size: _ } => {
+                        let mut filename = emoji.filename.as_ref().unwrap().clone();
+                        let extension = format.to_extension();
+                        filename.push_str(&format!(".{}", extension));
 
-                    for file in target.include_files.iter() {
-                        let filename = match file.file_name() {
-                            Some(filename) => filename.to_str().unwrap(),
-                            None => {
-                                panic!("Failed to get filename for file '{}' while building target '{}'", file.display(), target.name);
-                            }
-                        };
-
-                        let path = path.join(filename);
-
-                        match fs::copy(file, path) {
-                            Ok(_) => {}
-                            Err(err) => {
-                                panic!("Failed to copy file '{}' while building target '{}': {}", filename, target.name, err);
-                            }
-                        };
-
-                        stage.clone().inc();
+                        package.add_file(
+                            emoji.raster.as_ref().unwrap(),
+                            &filename
+                        );
                     }
+                }
 
-                    // TODO: metadata
-                }
-                Container::Zip => {
-                    // TODO
-                    unimplemented!();
-                }
+                stage.inc();
+            }
+
+            // Write metadata
+            // TODO
+
+            // Write extra files
+            for file in target.include_files.iter() {
+                let filename = match file.file_name() {
+                    Some(filename) => filename.to_str().unwrap(),
+                    None => {
+                        panic!("Failed to get filename for file '{}' while building target '{}'", file.display(), target.name);
+                    }
+                };
+
+                match fs::read(file) {
+                    Ok(file) => {
+                        package.add_file(&file, filename);
+                    },
+                    Err(error) => {
+                        panic!("Failed to read file '{}' while building target '{}': {}", file.display(), target.name, error);
+                    }
+                };
+
+                stage.inc();
             }
         }
     }
