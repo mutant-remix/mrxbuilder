@@ -44,9 +44,6 @@ paths = [
 ### Target
 - `tags`: Used when calling mrxbuilder to select which targets to build.
 - `output`:
-    - `container`
-        - `directory`
-        - `zip`
     - `format`:
         - No images: `none` - used for metadata-only builds
         - Vector images: `svg` - skips rasterization
@@ -61,12 +58,15 @@ paths = [
     - `size` (number) - only for raster images
     - `compression` (number) - for applicable formats
 - `structure`
+    - `container`
+        - `directory`
+        - `zip`
+    - `flat`
+        - `true` - all emojis in the same directory
+        - `false` - emojis in subdirectories by category
     - `filenames`
-        - `shortcode` - use the first shortcode as the filename
-        - `codepoint` - use the full codepoint as the filename
-    - `subdirectories` - only for `shortcode` filenames
-        - `true` - organise emojis into subdirectories by category
-        - `false` - all emojis in the same directory
+        - `shortcode` - the first shortcode as the filename
+        - `codepoint` - the full codepoint **in base 10** (joined with `-`) as the filename (typically with `structure.flat = true`)
 - `include_files` - array of paths to files to include in the output
 
 ```toml
