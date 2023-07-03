@@ -40,20 +40,26 @@ jobs:
         run: cargo build --profile ci --target ${{ matrix.target.triple }}
 
       - name: Generate filename according to Cargo.toml
+        id: get_filename
         run: |
-          VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
-          FILENAME="mrxbuilder-v${VERSION}-${{ matrix.target.name }}${{ matrix.target.extension }}"
-          echo "filename=$FILENAME" >> "$GITHUB_ENV"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            powershell -Command "$VERSION = Select-String -Path Cargo.toml -Pattern 'version = ""(.*?)""' | ForEach-Object { $_.Matches.Groups[1].Value }; $FILENAME = ""mrxbuilder-v$VERSION-${{ matrix.target.name }}${{ matrix.target.extension }}""; Write-Host ""FILENAME=$FILENAME"" >> ""$env:GITHUB_OUTPUT"""
+          else
+            VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
+            FILENAME="mrxbuilder-v${VERSION}-${{ matrix.target.name }}${{ matrix.target.extension }}"
+            echo "FILENAME=$FILENAME" >> "$GITHUB_OUTPUT"
+          fi
+
 
       - name: Copy binary
         run: |
-          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} ${{ env.filename }}
+          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} ${{ steps.get_filename.outputs.FILENAME }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target.name }}
-          path: ${{ env.filename }}
+          path: ${{ steps.get_filename.outputs.FILENAME }}
 
   test-mrxbuilder:
     needs: build-mrxbuilder
@@ -68,14 +74,15 @@ jobs:
           path: binaries
 
       - name: Generate filename according to Cargo.toml
+        id: get_filename
         run: |
           VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
           FILENAME="mrxbuilder-v${VERSION}-x86_64-linux-gnu"
-          echo "filename=$FILENAME" >> "$GITHUB_ENV"
+          echo "FILENAME=$FILENAME" >> "$GITHUB_OUTPUT"
 
       - name: Run the builder
         run: |
-          ./binaries/${{ env.filename }} ./sample-input/index.toml ./out debug,release,metadata
+          ./binaries/${{ steps.get_filename.outputs.FILENAME }} ./sample-input/index.toml ./out debug,release,metadata
           echo
           tree out
           du -sh out
@@ -99,12 +106,12 @@ jobs:
         id: get_version
         run: |
           VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
-          echo "version=$VERSION" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
           files: binaries/**/*
-          tag_name: v${{ env.version }}
-          name: mrxbuilder v${{ env.version }}
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: mrxbuilder v${{ steps.get_version.outputs.VERSION }}
           draft: true
