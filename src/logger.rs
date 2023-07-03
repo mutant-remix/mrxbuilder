@@ -119,20 +119,27 @@ impl Logger {
     pub fn new_stage(&mut self, message: &str, size: usize) -> Bar {
         self.total_bar.inc();
 
-        let current_bar = RichProgress::new(
-            tqdm!(total = size, force_refresh = true, position = 1),
-            vec![
-                Column::text(&format!("[bold green]{}", message)),
-                Column::Bar,
-                Column::Percentage(1),
-                Column::CountTotal,
-                Column::Rate,
-                Column::text("ETA:"),
-                Column::RemainingTime,
-            ],
-        );
+        match &self.total_bar {
+            Bar::Tty(_) => {
+                let current_bar = RichProgress::new(
+                    tqdm!(total = size, force_refresh = true, position = 1),
+                    vec![
+                        Column::text(&format!("[bold green]{}", message)),
+                        Column::Bar,
+                        Column::Percentage(1),
+                        Column::CountTotal,
+                        Column::Rate,
+                        Column::text("ETA:"),
+                        Column::RemainingTime,
+                    ],
+                );
 
-        Bar::new(Some(current_bar))
+                Bar::new(Some(current_bar))
+            }
+            Bar::Notty(_) => {
+                Bar::new(None)
+            }
+        }
     }
 
     pub fn register_panic_hook(&mut self) {
