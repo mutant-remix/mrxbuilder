@@ -36,30 +36,45 @@ jobs:
       - name: Install nasm
         uses: ilammy/setup-nasm@v1
 
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Cache build artifacts
+        uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-target-
+
+      - name: Install cargo-get
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: cargo-get
+
       - name: Build binary
         run: cargo build --profile ci --target ${{ matrix.target.triple }}
 
-      - name: Generate filename according to Cargo.toml
-        id: get_filename
-        run: |
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            powershell -Command "$VERSION = Select-String -Path Cargo.toml -Pattern 'version = ""(.*?)""' | ForEach-Object { $_.Matches.Groups[1].Value }; $FILENAME = ""mrxbuilder-v$VERSION-${{ matrix.target.name }}${{ matrix.target.extension }}""; Write-Host ""FILENAME=$FILENAME"" >> ""$env:GITHUB_OUTPUT"""
-          else
-            VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
-            FILENAME="mrxbuilder-v${VERSION}-${{ matrix.target.name }}${{ matrix.target.extension }}"
-            echo "FILENAME=$FILENAME" >> "$GITHUB_OUTPUT"
-          fi
-
+      - name: Get version
+        id: get_version
+        shell: bash
+        run: echo "version=$(cargo get version)" >> "$GITHUB_OUTPUT"
 
       - name: Copy binary
         run: |
-          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} ${{ steps.get_filename.outputs.FILENAME }}
+          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} \
+            mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target.name }}
-          path: ${{ steps.get_filename.outputs.FILENAME }}
+          path: mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
   test-mrxbuilder:
     needs: build-mrxbuilder
@@ -73,16 +88,9 @@ jobs:
         with:
           path: binaries
 
-      - name: Generate filename according to Cargo.toml
-        id: get_filename
-        run: |
-          VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
-          FILENAME="mrxbuilder-v${VERSION}-x86_64-linux-gnu"
-          echo "FILENAME=$FILENAME" >> "$GITHUB_OUTPUT"
-
       - name: Run the builder
         run: |
-          ./binaries/${{ steps.get_filename.outputs.FILENAME }} ./sample-input/index.toml ./out debug,release,metadata
+          ./binaries/mrxbuilder-v*-x86_64-linux-gnu ./sample-input/index.toml ./out debug,release,metadata
           echo
           tree out
           du -sh out
@@ -102,16 +110,19 @@ jobs:
         with:
           path: binaries
 
-      - name: Get version from Cargo.toml
+      - name: Install cargo-get
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: cargo-get
+
+      - name: Get version
         id: get_version
-        run: |
-          VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
-          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(cargo get version)" >> "$GITHUB_OUTPUT"
 
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
           files: binaries/**/*
-          tag_name: v${{ steps.get_version.outputs.VERSION }}
-          name: mrxbuilder v${{ steps.get_version.outputs.VERSION }}
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: mrxbuilder v${{ steps.get_version.outputs.version }}
           draft: true
