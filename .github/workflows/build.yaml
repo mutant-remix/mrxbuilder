@@ -127,6 +127,15 @@ jobs:
         with:
           install-only: true
 
+      - name: Install cargo-get
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: cargo-get
+
+      - name: Get version
+        id: get_version
+        run: echo "version=$(cargo get version)" >> "$GITHUB_OUTPUT"
+
       - name: Pack binaries
         run: |
           mkdir -p release
@@ -138,18 +147,8 @@ jobs:
             chmod +x $file
             upx --best $file
 
-            archive=${file%.exe}
-            zip $archive.zip $file README.md LICENSE
+            zip mrxbuilder-v${{ steps.get_version.outputs.version }}-$target.zip $file README.md LICENSE
           done
-
-      - name: Install cargo-get
-        uses: baptiste0928/cargo-install@v2
-        with:
-          crate: cargo-get
-
-      - name: Get version
-        id: get_version
-        run: echo "version=$(cargo get version)" >> "$GITHUB_OUTPUT"
 
       - name: Create draft release
         uses: softprops/action-gh-release@v1
