@@ -586,8 +586,8 @@ impl Pack {
                                     "avif-lossy" => {
                                         match compression {
                                             Some(compression) => {
-                                                if compression > 100.0 {
-                                                    panic!("Target uses 'avif-lossy', but contains 'output.compression' '{}' (must be 0.0-100.0) in {:?}", compression, manifest_path);
+                                                if compression > 100.0 || compression < 1.0 {
+                                                    panic!("Target uses 'avif-lossy', but contains 'output.compression' '{}' (must be 1.0-100.0) in {:?}", compression, manifest_path);
                                                 }
 
                                                 OutputFormat::Raster {
