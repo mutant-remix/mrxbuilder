@@ -129,9 +129,8 @@ jobs:
 
       - name: Compress binaries
         run: |
-          echo "set -e" > compress.sh
-          echo "upx --best binaries/**/*" >> compress.sh
-          bash compress.sh
+          chmod +x binaries/**/*
+          upx --best binaries/**/*"
 
       - name: Install cargo-get
         uses: baptiste0928/cargo-install@v2
