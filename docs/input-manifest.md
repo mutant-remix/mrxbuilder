@@ -48,13 +48,13 @@ paths = [
         - No images: `none` - used for metadata-only builds
         - Vector images: `svg` - skips rasterization
         - Raster images:
-            Format name | Compression levels | Size | Compatibility | Notes
-            --- | --- | --- | --- | ---
-            `png-image` | n/a | Huge | Best | Intended for quick builds
-            `png-oxipng-zopfli` | 0.0-15.0 | Tiny | Best | **recommended for very low resolutions**
-            `png-oxipng-libdeflater` | 0.0-12.0 | Small | Best | **recommended**
-            `webp` | n/a | Small | Modern browsers | **recommended**
-            `avif-lossy` | 100.0-0.0 | Small | Bad | At high quality levels, it is not perceptibly lossy
+            Format name | Compression levels | Size | Compatibility | Speed | Notes
+            --- | --- | --- | --- | --- | ---
+            `png-image` | n/a | Huge | Best | Fast | Intended for quick builds
+            `png-oxipng-zopfli` | 0.0-15.0 | Tiny | Best | Slow | **recommended for very low resolutions**
+            `png-oxipng-libdeflater` | 0.0-12.0 | Small | Best | Medium | **recommended**
+            `webp` | n/a | Small | Modern browsers | Fast |
+            `avif-lossy` | 100.0-0.0 | Small | Bad | **Very** slow | At high quality levels, it is not perceptibly lossy
     - `size` (number) - only for raster images
     - `compression` (number) - for applicable formats
 - `structure`
