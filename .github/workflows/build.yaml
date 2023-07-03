@@ -58,6 +58,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y musl-tools
 
+      - name: Install musl target
+        if: matrix.target.name == 'x86_64-linux-musl'
+        run: rustup target add ${{ matrix.target.triple }}
+
       - name: Build binary
         run: cargo build --profile ci --target ${{ matrix.target.triple }}
 
