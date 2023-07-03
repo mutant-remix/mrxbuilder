@@ -135,12 +135,11 @@ jobs:
             mv binaries/$target/mrxbuilder-v*-$target .
 
             file=mrxbuilder-v*-$target
-            file=${file%.exe}
-
             chmod +x $file
             upx --best $file
 
-            zip $file.zip $file README.md LICENSE
+            archive=${file%.exe}
+            zip $archive.zip $file README.md LICENSE
           done
 
       - name: Install cargo-get
