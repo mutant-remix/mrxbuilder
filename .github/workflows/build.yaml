@@ -40,9 +40,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cargo
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.target.triple }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-
+            ${{ matrix.target.triple }}-cargo-
 
       - name: Cache build artifacts
         uses: actions/cache@v2
@@ -91,6 +91,7 @@ jobs:
 
       - name: Run the builder
         run: |
+          chmod +x ./binaries/x86_64-linux-gnu/mrxbuilder-v*-x86_64-linux-gnu
           ./binaries/x86_64-linux-gnu/mrxbuilder-v*-x86_64-linux-gnu ./sample-input/index.toml ./out debug,release,metadata
           echo
           tree out
