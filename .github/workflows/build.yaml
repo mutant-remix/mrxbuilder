@@ -127,10 +127,21 @@ jobs:
         with:
           install-only: true
 
-      - name: Compress binaries
+      - name: Pack binaries
         run: |
-          chmod +x binaries/**/*
-          upx --best binaries/**/*"
+          mkdir -p release
+
+          for target in x86_64-linux-musl x86_64-windows x86_64-macos; do
+            mv binaries/$target/mrxbuilder-v*-$target .
+
+            FILE=mrxbuilder-v*-$target
+            FILE=${FILE%.exe}
+
+            chmod +x $file
+            upx --best $file
+
+            zip $file.zip $file README.md LICENSE
+          done
 
       - name: Install cargo-get
         uses: baptiste0928/cargo-install@v2
@@ -144,7 +155,7 @@ jobs:
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
-          files: binaries/**/*
+          files: "*.zip"
           tag_name: v${{ steps.get_version.outputs.version }}
           name: mrxbuilder v${{ steps.get_version.outputs.version }}
           draft: true
