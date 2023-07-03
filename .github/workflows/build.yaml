@@ -14,7 +14,7 @@ jobs:
       matrix:
         target:
           - name: x86_64-windows
-            triple: x86_64-pc-windows-gnu
+            triple: x86_64-pc-windows-msvc
             extension: .exe
             runner: windows-latest
 
@@ -89,9 +89,19 @@ jobs:
         with:
           path: binaries
 
+      - name: Install cargo-get
+        uses: baptiste0928/cargo-install@v2
+        with:
+          crate: cargo-get
+
+      - name: Get version
+        id: get_version
+        shell: bash
+        run: echo "version=$(cargo get version)" >> "$GITHUB_OUTPUT"
+
       - name: Run the builder
         run: |
-          ./binaries/mrxbuilder-v*-x86_64-linux-gnu ./sample-input/index.toml ./out debug,release,metadata
+          ./binaries/mrxbuilder-v${{ steps.get_version.outputs.version }}-x86_64-linux-gnu ./sample-input/index.toml ./out debug,release,metadata
           echo
           tree out
           du -sh out
@@ -110,6 +120,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: binaries
+
+      - name: Compress binaries
+        run: upx --best binaries/**/*
 
       - name: Install cargo-get
         uses: baptiste0928/cargo-install@v2
