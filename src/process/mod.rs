@@ -183,6 +183,8 @@ impl Pack {
 
                 stage.inc();
             }
+
+            package.finish();
         }
     }
 }

@@ -1,8 +1,18 @@
-use std::{path::PathBuf, fs, io::ErrorKind::NotFound};
 use crate::load::manifest::Container;
+use std::{
+    fs::{self, File},
+    io::{ErrorKind::NotFound, Write},
+    path::PathBuf,
+};
+use zip::{write::FileOptions, CompressionMethod, ZipWriter};
+
+enum PackageKind {
+    Directory,
+    Zip(ZipWriter<File>),
+}
 
 pub struct Package {
-    kind: Container,
+    kind: PackageKind,
     path: PathBuf,
 }
 
@@ -12,23 +22,54 @@ impl Package {
             Ok(_) => {}
             Err(err) => {
                 if err.kind() != NotFound {
-                    panic!("Failed to remove old directory '{}': {}", path.display(), err);
+                    panic!(
+                        "Failed to remove old directory '{}': {}",
+                        path.display(),
+                        err
+                    );
                 }
             }
         }
 
         Self {
-            kind: kind.clone(),
+            kind: match kind {
+                Container::Zip => {
+                    let file = match File::create(path.with_extension("zip")) {
+                        Ok(file) => file,
+                        Err(err) => {
+                            panic!("Failed to create zip file '{:?}.zip': {}", path, err);
+                        }
+                    };
+
+                    PackageKind::Zip(ZipWriter::new(file))
+                }
+                Container::Directory => PackageKind::Directory,
+            },
             path: path.clone(),
         }
     }
 
     pub fn add_file(&mut self, file: &Vec<u8>, filename: &str) {
-        match self.kind {
-            Container::Zip => {
-                unimplemented!("Zip support coming soon");
-            },
-            Container::Directory => {
+        match &mut self.kind {
+            PackageKind::Zip(writer) => {
+                let options =
+                    FileOptions::default().compression_method(CompressionMethod::Deflated);
+
+                match writer.start_file(filename, options) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        panic!("Failed to start file '{}' in zip '{:?}.zip': {}", filename, self.path, err);
+                    }
+                };
+
+                match writer.write(file) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        panic!("Failed to write file '{}' to zip '{:?}.zip': {}", filename, self.path, err);
+                    }
+                };
+            }
+            PackageKind::Directory => {
                 let path = self.path.join(filename);
                 let dir = path.parent().unwrap();
 
@@ -49,5 +90,18 @@ impl Package {
             }
         }
     }
-}
 
+    pub fn finish(&mut self) {
+        match &mut self.kind {
+            PackageKind::Zip(writer) => {
+                match writer.finish() {
+                    Ok(_) => {}
+                    Err(err) => {
+                        panic!("Failed to close zip file '{:?}': {}", self.path, err);
+                    }
+                };
+            }
+            PackageKind::Directory => {}
+        }
+    }
+}
