@@ -1,0 +1,6 @@
+[[target]]
+name = "full-metadata"
+tags = [ "debug", "release", "metadata" ]
+include_tags = [ "unicode", "extra" ]
+output = { format = "none" }
+structure = { container = "directory", flat = false, filenames = "shortcode" }

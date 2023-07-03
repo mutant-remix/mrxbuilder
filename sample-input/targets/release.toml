@@ -1,0 +1,23 @@
+[[target]]
+name = "unicode-codepoint-png-128"
+tags = [ "release" ]
+include_tags = [ "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "directory", flat = true, filenames = "codepoint" }
+include_files = [ "../LICENSE" ]
+
+[[target]]
+name = "full-shortcode-webp-512"
+tags = [ "release" ]
+include_tags = [ "unicode", "extra" ]
+output = { format = "webp", size = 512 }
+structure = { container = "zip", flat = false, filenames = "shortcode" }
+include_files = [ "../LICENSE" ]
+
+[[target]]
+name = "full-shortcode-avif-64"
+tags = [ "release" ]
+include_tags = [ "unicode", "extra" ]
+output = { format = "avif-lossy", compression = 100.0, size = 64 }
+structure = { container = "directory", flat = false, filenames = "shortcode" }
+include_files = [ "../LICENSE" ]
