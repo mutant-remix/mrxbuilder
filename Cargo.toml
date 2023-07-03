@@ -17,7 +17,7 @@ svgdom = "0.18.0"
 svgcleaner = "0.9.5"
 toml = "0.7.4"
 resvg = "0.32.0"
-image = { version = "0.24.6", features = ["webp-encoder"] }
+image = { version = "0.24.6", features = ["png", "webp-encoder"], default-features = false }
 ravif = "0.11.1"
 mtpng = "0.3.5"
 # oxipng = "8.0.0"

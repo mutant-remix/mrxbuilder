@@ -19,16 +19,9 @@ jobs:
             docker: ""
             runner: windows-latest
 
-          - name: x86_64-linux-gnu
-            triple: x86_64-unknown-linux-gnu
-            extension: ""
-            docker: ""
-            runner: ubuntu-latest
-
           - name: x86_64-linux-musl
             triple: x86_64-unknown-linux-musl
             extension: ""
-            docker: ekidd/rust-musl-builder:latest
             runner: ubuntu-latest
 
           - name: x86_64-macos
@@ -53,33 +46,20 @@ jobs:
         uses: actions/cache@v2
         with:
           path: target
-          key: ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-target-
-
-      - name: Cache Docker images
-        if: matrix.target.docker != ''
-        uses: actions/cache@v2
-        with:
-          path: /usr/local/bin/docker
-          key: docker-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: docker-
+          key: ${{ matrix.target.triple }}-target-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ matrix.target.triple }}-target-
 
       - name: Install nasm
-        if: matrix.target.docker == ''
         uses: ilammy/setup-nasm@v1
 
-      - name: Build binary
-        if: matrix.target.docker == ''
-        run: cargo build --profile ci --target ${{ matrix.target.triple }}
-
-      - name: Build binary in Docker
-        if: matrix.target.docker != ''
+      - name: Install musl build dependencies
+        if: matrix.target.name == 'x86_64-linux-musl'
         run: |
-          docker run --rm -v "$PWD:/src" -w /src ${{ matrix.target.docker }} bash -c "
-            sudo apt-get update
-            sudo apt-get install -y nasm
-            cargo build --profile ci --target ${{ matrix.target.triple }}
-          "
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Build binary
+        run: cargo build --profile ci --target ${{ matrix.target.triple }}
 
       - name: Install cargo-get
         uses: baptiste0928/cargo-install@v2
@@ -137,6 +117,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: binaries
+
+      - name: Install latest upx
+        uses: crazy-max/ghaction-upx@v2
+        with:
+          install-only: true
 
       - name: Compress binaries
         run: |
