@@ -16,7 +16,7 @@ fn main() {
     logger.register_panic_hook();
     logger.set_stage_count(1);
 
-    logger.info(&format!("Using {} CPUs", num_cpus::get() as u64));
+    logger.info(&format!("Using {} CPUs", num_cpus::get()));
 
     let mut args = env::args();
     args.nth(0);
