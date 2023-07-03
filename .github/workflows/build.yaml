@@ -134,7 +134,7 @@ jobs:
           for target in x86_64-linux-musl x86_64-windows x86_64-macos; do
             mv binaries/$target/mrxbuilder-v*-$target .
 
-            file=mrxbuilder-v*-$target
+            file=mrxbuilder-v*-$target*
             chmod +x $file
             upx --best $file
 
