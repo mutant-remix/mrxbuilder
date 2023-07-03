@@ -39,22 +39,49 @@ jobs:
       - name: Build binary
         run: cargo build --profile ci --target ${{ matrix.target.triple }}
 
-      - name: Get version from Cargo.toml
-        id: get_version
-        run: echo ::set-output name=version::$(cargo metadata --format-version 1 | jq -r '.packages[0].version')
+      - name: Generate filename according to Cargo.toml
+        run: |
+          VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
+          FILENAME="mrxbuilder-v${VERSION}-${{ matrix.target.name }}${{ matrix.target.extension }}"
+          echo "filename=$FILENAME" >> "$GITHUB_ENV"
 
       - name: Copy binary
         run: |
-          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
+          cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} ${{ env.filename }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target.name }}
-          path: mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
+          path: ${{ env.filename }}
+
+  test-mrxbuilder:
+    needs: build-mrxbuilder
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download built binaries
+        uses: actions/download-artifact@v3
+        with:
+          path: binaries
+
+      - name: Generate filename according to Cargo.toml
+        run: |
+          VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
+          FILENAME="mrxbuilder-v${VERSION}-x86_64-linux-gnu"
+          echo "filename=$FILENAME" >> "$GITHUB_ENV"
+
+      - name: Run the builder
+        run: |
+          ./binaries/${{ env.filename }} ./sample-input/index.toml ./out debug,release,metadata
+          echo
+          tree out
+          du -sh out
 
   publish-draft-release:
-    needs: build-mrxbuilder
+    needs: test-mrxbuilder
     runs-on: ubuntu-latest
 
     # Only run this job on manual trigger
@@ -70,12 +97,14 @@ jobs:
 
       - name: Get version from Cargo.toml
         id: get_version
-        run: echo ::set-output name=version::$(cargo metadata --format-version 1 | jq -r '.packages[0].version')
+        run: |
+          VERSION=$(grep -m1 -Po '(?<=version = ")[^"]*' Cargo.toml | sed -e "s/'/''/g")
+          echo "version=$VERSION" >> "$GITHUB_ENV"
 
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
           files: binaries/**/*
-          tag_name: v${{ steps.get_version.outputs.version }}
-          name: mrxbuilder v${{ steps.get_version.outputs.version }}
+          tag_name: v${{ env.version }}
+          name: mrxbuilder v${{ env.version }}
           draft: true
