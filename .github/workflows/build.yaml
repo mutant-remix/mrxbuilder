@@ -89,19 +89,9 @@ jobs:
         with:
           path: binaries
 
-      - name: Install cargo-get
-        uses: baptiste0928/cargo-install@v2
-        with:
-          crate: cargo-get
-
-      - name: Get version
-        id: get_version
-        shell: bash
-        run: echo "version=$(cargo get version)" >> "$GITHUB_OUTPUT"
-
       - name: Run the builder
         run: |
-          ./binaries/mrxbuilder-v${{ steps.get_version.outputs.version }}-x86_64-linux-gnu ./sample-input/index.toml ./out debug,release,metadata
+          ./binaries/x86_64-linux-gnu/mrxbuilder-v*-x86_64-linux-gnu ./sample-input/index.toml ./out debug,release,metadata
           echo
           tree out
           du -sh out
