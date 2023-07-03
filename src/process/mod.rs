@@ -76,6 +76,8 @@ impl Pack {
 
             // Encode and generate filenames
             emojis.par_iter_mut().for_each(|emoji| {
+                stage.clone().inc();
+
                 let svg = &emoji.emoji.svg.as_ref().unwrap().0;
 
                 let encoded = match &target.output_format {
@@ -116,8 +118,6 @@ impl Pack {
                     },
                 };
 
-                stage.clone().inc();
-
                 emoji.raster = encoded;
                 emoji.filename = Some(filename);
             });
@@ -134,6 +134,8 @@ impl Pack {
 
             // Write emojis
             for emoji in &emojis {
+                stage.inc();
+
                 match &target.output_format {
                     OutputFormat::None => {},
                     OutputFormat::Svg => {
@@ -156,8 +158,6 @@ impl Pack {
                         );
                     }
                 }
-
-                stage.inc();
             }
 
             // Write metadata
