@@ -66,6 +66,7 @@ jobs:
         run: echo "version=$(cargo get version)" >> "$GITHUB_OUTPUT"
 
       - name: Copy binary
+        shell: bash
         run: |
           cp target/${{ matrix.target.triple }}/ci/mrxbuilder${{ matrix.target.extension }} \
             mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
