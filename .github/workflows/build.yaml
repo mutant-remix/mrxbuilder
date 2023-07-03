@@ -16,16 +16,25 @@ jobs:
           - name: x86_64-windows
             triple: x86_64-pc-windows-msvc
             extension: .exe
+            docker: ""
             runner: windows-latest
 
           - name: x86_64-linux-gnu
             triple: x86_64-unknown-linux-gnu
             extension: ""
+            docker: ""
+            runner: ubuntu-latest
+
+          - name: x86_64-linux-musl
+            triple: x86_64-unknown-linux-musl
+            extension: ""
+            docker: ekidd/rust-musl-builder:latest
             runner: ubuntu-latest
 
           - name: x86_64-macos
             triple: x86_64-apple-darwin
             extension: ""
+            docker: ""
             runner: macos-latest
 
     runs-on: ${{ matrix.target.runner }}
@@ -33,32 +42,48 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install nasm
-        uses: ilammy/setup-nasm@v1
-
       - name: Cache Cargo dependencies
         uses: actions/cache@v2
         with:
           path: ~/.cargo
           key: ${{ matrix.target.triple }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ matrix.target.triple }}-cargo-
+          restore-keys: ${{ matrix.target.triple }}-cargo-
 
       - name: Cache build artifacts
         uses: actions/cache@v2
         with:
           path: target
           key: ${{ runner.os }}-target-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-target-
+          restore-keys: ${{ runner.os }}-target-
+
+      - name: Cache Docker images
+        if: matrix.target.docker != ''
+        uses: actions/cache@v2
+        with:
+          path: /usr/local/bin/docker
+          key: docker-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: docker-
+
+      - name: Install nasm
+        if: matrix.target.docker == ''
+        uses: ilammy/setup-nasm@v1
+
+      - name: Build binary
+        if: matrix.target.docker == ''
+        run: cargo build --profile ci --target ${{ matrix.target.triple }}
+
+      - name: Build binary in Docker
+        if: matrix.target.docker != ''
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src ${{ matrix.target.docker }} bash -c "
+            apt-get update && apt-get install -y nasm
+            cargo build --profile ci --target ${{ matrix.target.triple }}
+          "
 
       - name: Install cargo-get
         uses: baptiste0928/cargo-install@v2
         with:
           crate: cargo-get
-
-      - name: Build binary
-        run: cargo build --profile ci --target ${{ matrix.target.triple }}
 
       - name: Get version
         id: get_version
@@ -113,7 +138,10 @@ jobs:
           path: binaries
 
       - name: Compress binaries
-        run: upx --best binaries/**/*
+        run: |
+          echo "set -e" > compress.sh
+          echo "upx --best binaries/**/*" >> compress.sh
+          bash compress.sh
 
       - name: Install cargo-get
         uses: baptiste0928/cargo-install@v2
