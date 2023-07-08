@@ -1,4 +1,4 @@
-use std::{path::PathBuf, fs, env};
+use std::{env, fs, path::PathBuf};
 
 mod pack;
 use pack::Pack;
@@ -28,14 +28,7 @@ fn main() {
         }
     };
     let output_path = match args.nth(0) {
-        Some(path) => {
-            match fs::create_dir_all(&path) {
-                Ok(_) => {},
-                Err(err) => panic!("Failed to create output directory: {}", err),
-            };
-
-            PathBuf::from(path)
-        },
+        Some(path) => PathBuf::from(path),
         None => {
             panic!("Missing output directory path. Usage: <input manifest> <output directory> <tag1,tag2>");
         }
@@ -47,10 +40,28 @@ fn main() {
         }
     };
 
+    let dry = match args.nth(0) {
+        Some(dry) => {
+            if dry == "--dry" {
+                logger.info("Running in dry run mode. No files will be written.");
+                true
+            } else {
+                panic!("Unknown argument: {}", dry);
+            }
+        }
+        None => {
+            match fs::create_dir_all(&output_path) {
+                Ok(_) => {}
+                Err(err) => panic!("Failed to create output directory: {}", err),
+            };
+            false
+        }
+    };
+
     let mut pack = Pack::new(logger, output_path);
 
     pack.load_all(&manifest_path);
-    pack.build_tags(tags);
+    pack.build_tags(tags, dry);
 
     pack.logger.finish()
 }

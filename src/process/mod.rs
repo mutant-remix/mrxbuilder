@@ -1,5 +1,5 @@
-use rayon::prelude::*;
 use std::fs;
+use rayon::prelude::*;
 
 pub mod encode;
 use encode::encode_raster;
@@ -9,20 +9,23 @@ use rasterize::rasterise_svg;
 
 pub mod cache;
 
+mod metadata;
+use metadata::generate_metadata;
+
 mod package;
 use package::Package;
 
 use crate::load::manifest::{OutputFormat, FilenameFormat, Emoji};
 use crate::Pack;
 
-struct EmojiEncoded {
-    emoji: Emoji,
+pub struct EmojiEncoded {
+    pub filename: Option<String>,
+    pub emoji: Emoji,
     raster: Option<Vec<u8>>,
-    filename: Option<String>,
 }
 
 impl Pack {
-    pub fn build_tags(&mut self, tags: Vec<String>) {
+    pub fn build_tags(&mut self, tags: Vec<String>, dry: bool) {
         let targets = self
             .targets
             .iter()
@@ -88,12 +91,14 @@ impl Pack {
                                 let raster = rasterise_svg(svg, *size);
                                 let encoded = encode_raster(&raster, &format);
 
-                                self.cache.save(
-                                    &svg,
-                                    &format,
-                                    *size,
-                                    &encoded,
-                                );
+                                if !dry {
+                                    self.cache.save(
+                                        &svg,
+                                        &format,
+                                        *size,
+                                        &encoded,
+                                    );
+                                };
 
                                 Some(encoded)
                             }
@@ -118,19 +123,33 @@ impl Pack {
                     },
                 };
 
+                let filename = match &target.output_format {
+                    OutputFormat::Svg => format!("{}.svg", filename),
+                    OutputFormat::Raster { format, size: _ } => {
+                        let extension = format.to_extension();
+                        format!("{}.{}", filename, extension)
+                    },
+                    OutputFormat::None => filename,
+                };
+
                 emoji.raster = encoded;
                 emoji.filename = Some(filename);
             });
 
             // Generate metadata
+            let mut categories = Vec::new();
             for emoji in &emojis {
-                // TODO
+                let category = emoji.emoji.category[0].clone();
+
+                if !categories.contains(&category) {
+                    categories.push(category);
+                }
             }
 
             let mut stage = self.logger.new_stage("Writing", emojis.len() + target.include_files.len());
 
             let path = self.output_path.join(&target.name);
-            let mut package = Package::new(&target.output_structure.container, &path);
+            let mut package = Package::new(&target.output_structure.container, &path, dry);
 
             // Write emojis
             for emoji in &emojis {
@@ -139,29 +158,23 @@ impl Pack {
                 match &target.output_format {
                     OutputFormat::None => {},
                     OutputFormat::Svg => {
-                        let mut filename = emoji.filename.as_ref().unwrap().clone();
-                        filename.push_str(".svg");
-
                         package.add_file(
                             &emoji.emoji.svg.as_ref().unwrap().0.as_bytes().to_vec(),
-                            &filename
+                            emoji.filename.as_ref().unwrap()
                         );
                     }
-                    OutputFormat::Raster { format, size: _ } => {
-                        let mut filename = emoji.filename.as_ref().unwrap().clone();
-                        let extension = format.to_extension();
-                        filename.push_str(&format!(".{}", extension));
-
+                    OutputFormat::Raster { format: _, size: _ } => {
                         package.add_file(
                             emoji.raster.as_ref().unwrap(),
-                            &filename
+                            emoji.filename.as_ref().unwrap()
                         );
                     }
                 }
             }
 
             // Write metadata
-            // TODO
+            let metadata = generate_metadata(&emojis);
+            package.add_file(&metadata.as_bytes().to_vec(), "metadata.json");
 
             // Write extra files
             for file in target.include_files.iter() {
