@@ -11,7 +11,7 @@ name = "full-shortcode-webp-512"
 tags = [ "release" ]
 include_tags = [ "unicode", "extra" ]
 output = { format = "webp", size = 512 }
-structure = { container = "zip", flat = false, filenames = "shortcode" }
+structure = { container = "zip-deflate", flat = false, filenames = "shortcode" }
 include_files = [ "../LICENSE" ]
 
 [[target]]

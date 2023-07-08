@@ -50,7 +50,7 @@ paths = [
         - Raster images:
             Format name | Compression levels | Size | Compatibility | Speed | Notes
             --- | --- | --- | --- | --- | ---
-            `png-image` | n/a | Huge | Best | Fast | Intended for quick builds
+            `png-image` | n/a | Huge | Best | Fast | **recommended for development**
             `png-oxipng-zopfli` | 0.0-15.0 | Tiny | Best | Slow | **recommended for very low resolutions**
             `png-oxipng-libdeflater` | 0.0-12.0 | Small | Best | Medium | **recommended**
             `webp` | n/a | Small | Modern browsers | Fast |
@@ -59,8 +59,18 @@ paths = [
     - `compression` (number) - for applicable formats
 - `structure`
     - `container`
-        - `directory`
-        - `zip`
+        Name | Container | Compression | Notes
+        --- | --- | --- | ---
+        `directory` | Directory | n/a | **recommended for development**
+        `zip` | ZIP | none |
+        `zip-deflate` | ZIP | Deflate | **recommended**
+        `zip-bz2` | ZIP | Bzip2 |
+        `zip-zst` | ZIP | Zstandard | Smallest size, low compatibility
+        `tar` | TAR | none |
+        `tar-gz` | TAR | Gzip |
+        `tar-bz2` | TAR | Bzip2 |
+        `tar-xz` | TAR | XZ |
+        `tar-zst` | TAR | Zstandard | Smallest size, low compatibility
     - `flat`
         - `true` - all emojis in the same directory
         - `false` - emojis in subdirectories by category
@@ -150,8 +160,11 @@ description = "The flag of Lithuania"
 ```
 
 ### Emoji
-- `name`, `description`, `category` - used for metadata and structure
-- `codepoint`: single codepoint split into parts.
+- `name` - used for metadata
+- `description` - used for metadata
+- `category` - used for metadata and structure
+> The first `category` will be used as the group in the metadata
+- `codepoint`: single codepoint split into parts, each starting with `U+`
 > If `structure.filenames` is `codepoint`, this will be used as the filename, with `U+` stripped and joined with `_`
 - `shortcodes`: list of shortcodes.
 > The first one will be used as the filename if `structure.filenames` is `shortcode`

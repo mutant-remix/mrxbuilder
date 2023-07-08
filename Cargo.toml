@@ -27,3 +27,8 @@ kdam = "0.3.0"
 md5 = "0.7.0"
 regex = "1.8.4"
 zip = "0.6.6"
+serde = { version = "1.0.166", features = ["derive"] }
+serde_json = "1.0.99"
+tar = "0.4.38"
+zstd = "0.12.3"
+bzip2 = "0.4.4"

@@ -1,4 +1,4 @@
-use crate::load::manifest::Container;
+use crate::load::manifest::{Container, TarCompression};
 use std::{
     fs::{self, File},
     io::{ErrorKind::NotFound, Write},
@@ -8,7 +8,8 @@ use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 
 enum PackageKind {
     Directory,
-    Zip(ZipWriter<File>),
+    Zip(ZipWriter<File>, CompressionMethod),
+    Tar(File, TarCompression),
 }
 
 pub struct Package {
@@ -33,7 +34,7 @@ impl Package {
 
         Self {
             kind: match kind {
-                Container::Zip => {
+                Container::Zip(compression) => {
                     let file = match File::create(path.with_extension("zip")) {
                         Ok(file) => file,
                         Err(err) => {
@@ -41,7 +42,25 @@ impl Package {
                         }
                     };
 
-                    PackageKind::Zip(ZipWriter::new(file))
+                    PackageKind::Zip(ZipWriter::new(file), *compression)
+                }
+                Container::Tar(compression) => {
+                    let extension = match compression {
+                        TarCompression::None => "tar",
+                        TarCompression::Gzip => "tar.gz",
+                        TarCompression::Bzip2 => "tar.bz2",
+                        TarCompression::Xz => "tar.xz",
+                        TarCompression::Zstd => "tar.zst",
+                    };
+
+                    let file = match File::create(path.with_extension(extension)) {
+                        Ok(file) => file,
+                        Err(err) => {
+                            panic!("Failed to create tar file '{:?}.tar': {}", path, err);
+                        }
+                    };
+
+                    PackageKind::Tar(file, compression.clone())
                 }
                 Container::Directory => PackageKind::Directory,
             },
@@ -51,9 +70,9 @@ impl Package {
 
     pub fn add_file(&mut self, file: &Vec<u8>, filename: &str) {
         match &mut self.kind {
-            PackageKind::Zip(writer) => {
+            PackageKind::Zip(writer, compression) => {
                 let options =
-                    FileOptions::default().compression_method(CompressionMethod::Deflated);
+                    FileOptions::default().compression_method(*compression);
 
                 match writer.start_file(filename, options) {
                     Ok(_) => {}
@@ -68,6 +87,9 @@ impl Package {
                         panic!("Failed to write file '{}' to zip '{:?}.zip': {}", filename, self.path, err);
                     }
                 };
+            }
+            PackageKind::Tar(file, compression) => {
+                unimplemented!("Tar containers are not yet supported")
             }
             PackageKind::Directory => {
                 let path = self.path.join(filename);
@@ -93,13 +115,16 @@ impl Package {
 
     pub fn finish(&mut self) {
         match &mut self.kind {
-            PackageKind::Zip(writer) => {
+            PackageKind::Zip(writer, _) => {
                 match writer.finish() {
                     Ok(_) => {}
                     Err(err) => {
                         panic!("Failed to close zip file '{:?}': {}", self.path, err);
                     }
                 };
+            }
+            PackageKind::Tar(writer, compression) => {
+                unimplemented!("Tar containers are not yet supported")
             }
             PackageKind::Directory => {}
         }

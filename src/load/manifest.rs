@@ -1,12 +1,23 @@
 use std::{collections::HashMap, fs, path::PathBuf};
+use zip::CompressionMethod;
 
 use crate::load::{svg::Svg, Pack};
 use crate::process::encode::{EncodeTarget, OxiPngMode};
 
 #[derive(Clone, Debug)]
+pub enum TarCompression {
+    None,
+    Gzip,
+    Bzip2,
+    Xz,
+    Zstd,
+}
+
+#[derive(Clone, Debug)]
 pub enum Container {
     Directory,
-    Zip,
+    Zip(CompressionMethod),
+    Tar(TarCompression),
 }
 
 #[derive(Clone, Debug)]
@@ -469,7 +480,15 @@ impl Pack {
 
                             let container = match structure.get("container") {
                                 Some(container) => match container.as_str().unwrap() {
-                                    "zip" => Container::Zip,
+                                    "zip" => Container::Zip(CompressionMethod::Stored),
+                                    "zip-deflate" => Container::Zip(CompressionMethod::Deflated),
+                                    "zip-bz2" => Container::Zip(CompressionMethod::Bzip2),
+                                    "zip-zst" => Container::Zip(CompressionMethod::Zstd),
+                                    "tar" => Container::Tar(TarCompression::None),
+                                    "tar-gz" => Container::Tar(TarCompression::Gzip),
+                                    "tar-bz2" => Container::Tar(TarCompression::Bzip2),
+                                    "tar-xz" => Container::Tar(TarCompression::Xz),
+                                    "tar-zst" => Container::Tar(TarCompression::Zstd),
                                     "directory" => Container::Directory,
                                     _ => panic!("Target contains unknown 'structure.container' '{}' in {:?}", container, manifest_path),
                                 }
