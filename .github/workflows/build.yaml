@@ -88,8 +88,16 @@ jobs:
           path: mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
   test-mrxbuilder:
+    strategy:
+      matrix:
+        runner:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+
     needs: build-mrxbuilder
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - uses: actions/checkout@v3
@@ -100,12 +108,29 @@ jobs:
           path: binaries
 
       - name: Run the builder
+        if: matrix.runner == 'ubuntu-latest'
         run: |
           chmod +x ./binaries/x86_64-linux-musl/mrxbuilder-v*-x86_64-linux-musl
           ./binaries/x86_64-linux-musl/mrxbuilder-v*-x86_64-linux-musl ./sample-input/index.toml ./out debug,release,metadata
           echo
           tree out
           du -sh out
+
+      - name: Run the builder
+        if: matrix.runner == 'macos-latest'
+        run: |
+          chmod +x ./binaries/x86_64-macos/mrxbuilder-v*-x86_64-macos
+          ./binaries/x86_64-macos/mrxbuilder-v*-x86_64-macos ./sample-input/index.toml ./out debug,release,metadata
+          echo
+          tree out
+          du -sh out
+
+      - name: Run the builder
+        if: matrix.runner == 'windows-latest'
+        run: |
+          ./binaries/x86_64-windows/mrxbuilder-v*-x86_64-windows.exe ./sample-input/index.toml ./out debug,release,metadata
+          echo
+          tree out
 
   publish-draft-release:
     needs: test-mrxbuilder
