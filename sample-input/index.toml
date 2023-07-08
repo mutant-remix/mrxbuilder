@@ -2,6 +2,7 @@
 paths = [
     "./emoji/hands/hands.toml",
     "./emoji/smileys/smileys.toml",
+    "./emoji/flags/flags.toml",
 ]
 
 [[include]]

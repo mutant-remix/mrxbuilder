@@ -67,9 +67,9 @@ paths = [
         `zip-bz2` | ZIP | `.bz2.zip` | Bzip2 | **low compatibility**
         `zip-zst` | ZIP | `.zst.zip` | Zstandard | **low compatibility**
         `tar` | TAR | `.tar` | none |
-        `tar-gz` | TAR | `.tar.gz` | Gzip |
+        `tar-gz` | TAR | `.tar.gz` | Gzip | **recommended**
         `tar-bz2` | TAR | `.tar.bz2` | Bzip2 |
-        `tar-xz` | TAR | `.tar.xz` | XZ |
+        `tar-xz` | TAR | `.tar.xz` | XZ | Smallest size
         `tar-zst` | TAR | `.tar.zst` | Zstandard | Smallest size
     - `flat`
         - `true` - all emojis in the same directory
@@ -146,7 +146,7 @@ The `name` of the colormap must start with `%`
 name = "%skin_tone.l1"
 label = " - Light 1"
 shortcode = "_l1"
-codepoint = "U+1F3FB"
+codepoint = [ "U+1F3FB" ]
 "$base.1" = "$skin_tone.l1"
 
 # 3-color flag

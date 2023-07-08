@@ -1,5 +1,5 @@
 [[target]]
-name = "full-metadata"
+name = "metadata"
 tags = [ "debug", "release", "metadata" ]
 include_tags = [ "unicode", "extra" ]
 output = { format = "none" }

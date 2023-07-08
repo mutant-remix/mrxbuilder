@@ -54,7 +54,7 @@ pub struct Target {
 pub struct Colormap {
     pub label: Option<String>,
     pub shortcode: Option<String>,
-    pub codepoint: Option<String>,
+    pub codepoint: Option<Vec<String>>,
     pub description: Option<String>,
     pub entries: HashMap<String, String>,
 }
@@ -212,7 +212,7 @@ impl Pack {
 
                     let mut label: Option<String> = None;
                     let mut shortcode: Option<String> = None;
-                    let mut codepoint: Option<String> = None;
+                    let mut codepoint: Option<Vec<String>> = None;
                     let mut description: Option<String> = None;
 
                     let mut entries = HashMap::new();
@@ -239,10 +239,25 @@ impl Pack {
                                 }
                             }
                             "codepoint" => {
-                                codepoint = match value.as_str() {
-                                    Some(codepoint) => Some(codepoint.to_string()),
+                                codepoint = match value.as_array() {
+                                    Some(codepoint) => {
+                                        let codepoint = codepoint
+                                            .iter()
+                                            .map(|codepoint| {
+                                                match codepoint.as_str() {
+                                                    Some(codepoint) => codepoint.to_string(),
+                                                    None => panic!(
+                                                        "Colormap codepoint component is not a string in {:?}",
+                                                        manifest_path
+                                                    ),
+                                                }
+                                            })
+                                            .collect::<Vec<String>>();
+
+                                        Some(codepoint)
+                                    },
                                     None => panic!(
-                                        "Colormap codepoint is not a string in {:?}",
+                                        "Colormap codepoint is not an array in {:?}",
                                         manifest_path
                                     ),
                                 }
@@ -433,7 +448,13 @@ impl Pack {
 
                     let name = match target.get("name") {
                         Some(name) => match name.as_str() {
-                            Some(name) => name.to_string(),
+                            Some(name) => {
+                                if name == "cache" {
+                                    panic!("Target name cannot be 'cache' in {:?}", manifest_path);
+                                }
+
+                                name.to_string()
+                            },
                             None => panic!("Target name is not a string in {:?}", manifest_path),
                         },
                         None => panic!("Target is missing 'name' in {:?}", manifest_path),

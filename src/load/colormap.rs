@@ -57,16 +57,26 @@ impl Pack {
                     }
 
                     if let Some(codepoint) = &mut emoji.codepoint {
-                        for codepoint in codepoint.iter_mut() {
+                        let mut new_codepoint: Vec<String> = Vec::new();
+
+                        for codepoint in codepoint.iter() {
                             if codepoint == "%codepoint" {
                                 let colormap_codepoint = match &colormap.codepoint {
                                     Some(colormap_codepoint) => colormap_codepoint,
                                     None => panic!("Emoji '{}' uses %codepoint, but colormap '{}' does not have a codepoint ", emoji.name, colormap_name),
                                 };
 
-                                *codepoint = colormap_codepoint.clone().to_string();
+                                for codepoint in colormap_codepoint {
+                                    new_codepoint.push(codepoint.to_owned());
+                                }
+
+                                continue;
                             }
+
+                            new_codepoint.push(codepoint.clone());
                         }
+
+                        *codepoint = new_codepoint;
                     }
 
                     if emoji.description.contains("%description") {

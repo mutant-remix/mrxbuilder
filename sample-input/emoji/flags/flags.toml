@@ -1,0 +1,29 @@
+[[colormap]]
+name = "%flag.lt"
+label = "Lithuania"
+shortcode = "lt"
+description = "Lithuania"
+codepoint = [ "U+1F1F1", "U+1F1F9" ]
+"$base.1" = "#fbbc0c"
+"$base.2" = "#056b43"
+"$base.3" = "#c4242c"
+
+[[colormap]]
+name = "%flag.ee"
+label = "Estonia"
+shortcode = "ee"
+description = "Estonia"
+codepoint = [ "U+1F1EA", "U+1F1EA" ]
+"$base.1" = "#4494dc"
+"$base.2" = "#0c0d0d"
+"$base.3" = "#ececec"
+
+[[emoji]]
+src = "./3color-base.svg"
+name = "%label"
+category = [ "flags", "countries" ]
+description = "Flag of %description"
+tags = [ "unicode" ]
+codepoint = [ "%codepoint" ]
+shortcodes = [ "flag_%shortcode" ]
+colormaps = [ "%flag.lt", "%flag.ee" ]

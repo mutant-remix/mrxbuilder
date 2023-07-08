@@ -35,17 +35,29 @@ impl Pack {
             }
 
             if let Some(codepoint) = &mut colormap.codepoint {
-                if codepoint.starts_with("$") {
-                    match self.definitions.get(codepoint) {
-                        Some(variable) => {
-                            *codepoint = variable.clone();
+                let mut new_codepoint: Vec<String> = Vec::new();
+
+                for component in codepoint.iter() {
+                    if component.starts_with("$") {
+                        match self.definitions.get(component) {
+                            Some(variable) => {
+                                for variable_component in variable.split(" ") {
+                                    new_codepoint.push(variable_component.to_string());
+                                }
+                            }
+                            None => panic!(
+                                "Colormap uses variable '{}' in codepoint, which is undefined",
+                                component
+                            ),
                         }
-                        None => panic!(
-                            "Colormap uses variable '{}' in codepoint, which is undefined",
-                            codepoint
-                        ),
+
+                        continue;
                     }
+
+                    new_codepoint.push(component.clone());
                 }
+
+                *codepoint = new_codepoint;
             };
         }
 
