@@ -22,23 +22,24 @@ If you are moving from **orxporter**, check out the [manifest porter](https://gi
 Check out the [documentation](./docs) and [sample input](./sample-input) for input manifest and output metadata specifications and examples.
 
 ## Usage
-The builder is run from the command line. It takes exactly 3 arguments:
+The builder is run from the command line. It takes 3-4 arguments:
 - path to the index manifest file
 - output path (cache is also stored here)
 - tags for the targets to build (comma separated)
+- `--dry` flag to skip writing any files
 
 #### Prebuilt binaries
 Download a prebuilt binary for your platform from the [releases page](https://github.com/mutant-remix/mrxbuilder/releases)
 
 ```bash
-./builder ./input/index.toml ./output debug,release
+./builder ./input/index.toml ./output debug,release [--dry]
 ```
 
 #### Manual build
 You will need to have Rust installed. The simplest way is to use [rustup](https://rustup.rs/).
 
 ```
-cargo run --release -- ./manifest/index.toml ./out debug,release
+cargo run --release -- ./manifest/index.toml ./out debug,release [--dry]
 ```
 
 > Note: Do not run it without the `--release` flag, as it will be **extremely** slow.
