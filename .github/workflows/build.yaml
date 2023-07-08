@@ -95,7 +95,6 @@ jobs:
           - macos-latest
           - windows-latest
 
-
     needs: build-mrxbuilder
     runs-on: ${{ matrix.runner }}
 
@@ -121,16 +120,17 @@ jobs:
         run: |
           chmod +x ./binaries/x86_64-macos/mrxbuilder-v*-x86_64-macos
           ./binaries/x86_64-macos/mrxbuilder-v*-x86_64-macos ./sample-input/index.toml ./out debug,release,metadata
-          echo
-          tree out
-          du -sh out
 
       - name: Run the builder
         if: matrix.runner == 'windows-latest'
         run: |
           ./binaries/x86_64-windows/mrxbuilder-v*-x86_64-windows.exe ./sample-input/index.toml ./out debug,release,metadata
-          echo
-          tree out
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: out-${{ matrix.runner }}
+          path: out
 
   publish-draft-release:
     needs: test-mrxbuilder
