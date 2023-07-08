@@ -11,7 +11,9 @@ paths = [
 
 [[include]]
 paths = [
-    "./targets/debug.toml",
-    "./targets/release.toml",
+    "./targets/containers.toml",
+    "./targets/formats.toml",
+    "./targets/sizes.toml",
+    "./targets/structures.toml",
     "./targets/metadata.toml",
 ]

@@ -1,0 +1,34 @@
+[[target]]
+name = "formats/png-image-128"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-image", size = 128 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }
+
+[[target]]
+name = "formats/png-oxipng-libdeflater-128"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }
+
+[[target]]
+name = "formats/png-oxipng-zopfli-128"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-zopfli", size = 128, compression = 14.0 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }
+
+[[target]]
+name = "formats/webp-128"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "webp", size = 128 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }
+
+[[target]]
+name = "formats/avif-lossy-128"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "avif-lossy", size = 128, compression = 95.0 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }

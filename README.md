@@ -15,7 +15,7 @@ If you are moving from **orxporter**, check out the [manifest porter](https://gi
 ## Features
 - Recolors emojis using colormaps to avoid repeating SVGs with different colors
 - Supports building to `svg`, `png`, `avif` and `webp` formats with various compression methods
-- Outputs to a `directory` or directly to a `zip` file
+- Outputs to a `directory` or directly to a `zip`/`tar` file with various compression methods
 - Really simple to run with only 3 arguments. Formats are pre-defined in the manifest, and selected for building using tags
 
 ## Manifest

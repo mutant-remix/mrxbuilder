@@ -51,7 +51,7 @@ paths = [
             Format name | Compression levels | Size | Compatibility | Speed | Notes
             --- | --- | --- | --- | --- | ---
             `png-image` | n/a | Huge | Best | Fast | **recommended for development**
-            `png-oxipng-zopfli` | 0.0-15.0 | Tiny | Best | Slow | **recommended for very low resolutions**
+            `png-oxipng-zopfli` | 0.0-14.0 | Tiny | Best | Slow | **recommended for very low resolutions**
             `png-oxipng-libdeflater` | 0.0-12.0 | Small | Best | Medium | **recommended**
             `webp` | n/a | Small | Modern browsers | Fast |
             `avif-lossy` | 100.0-0.0 | Small | Bad | **Very** slow | At high quality levels, it is not perceptibly lossy
@@ -59,18 +59,18 @@ paths = [
     - `compression` (number) - for applicable formats
 - `structure`
     - `container`
-        Name | Container | Compression | Notes
-        --- | --- | --- | ---
-        `directory` | Directory | n/a | **recommended for development**
-        `zip` | ZIP | none |
-        `zip-deflate` | ZIP | Deflate | **recommended**
-        `zip-bz2` | ZIP | Bzip2 |
-        `zip-zst` | ZIP | Zstandard | Smallest size, low compatibility
-        `tar` | TAR | none |
-        `tar-gz` | TAR | Gzip |
-        `tar-bz2` | TAR | Bzip2 |
-        `tar-xz` | TAR | XZ |
-        `tar-zst` | TAR | Zstandard | Smallest size, low compatibility
+        Name | Container | Extension | Compression | Notes
+        --- | --- | --- | --- | ---
+        `directory` | Directory | n/a | n/a | **recommended for development**
+        `zip` | ZIP | `.zip` | none |
+        `zip-deflate` | ZIP | `.zip` | Deflate | **recommended**
+        `zip-bz2` | ZIP | `.bz2.zip` | Bzip2 | **low compatibility**
+        `zip-zst` | ZIP | `.zst.zip` | Zstandard | **low compatibility**
+        `tar` | TAR | `.tar` | none |
+        `tar-gz` | TAR | `.tar.gz` | Gzip |
+        `tar-bz2` | TAR | `.tar.bz2` | Bzip2 |
+        `tar-xz` | TAR | `.tar.xz` | XZ |
+        `tar-zst` | TAR | `.tar.zst` | Zstandard | Smallest size
     - `flat`
         - `true` - all emojis in the same directory
         - `false` - emojis in subdirectories by category

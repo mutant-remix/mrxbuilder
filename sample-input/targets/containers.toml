@@ -1,0 +1,69 @@
+[[target]]
+name = "containers/directory"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "directory", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/zip"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "zip", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/zip-deflate"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "zip-deflate", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/zip-bz2"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "zip-bz2", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/zip-zst"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "zip-zst", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/tar"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "tar", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/tar-gz"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "tar-gz", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/tar-bz2"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "tar-bz2", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/tar-xz"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "tar-xz", flat = false, filenames = "shortcode" }
+
+[[target]]
+name = "containers/tar-zst"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "tar-zst", flat = false, filenames = "shortcode" }

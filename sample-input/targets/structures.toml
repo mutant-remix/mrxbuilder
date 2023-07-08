@@ -1,0 +1,31 @@
+[[target]]
+name = "structures/png-oxipng-libdeflater-512"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }
+include_files = [ "../LICENSE" ]
+
+[[target]]
+name = "structures/png-oxipng-libdeflater-512"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "directory", flat = false, filenames = "shortcode" }
+include_files = [ "../LICENSE" ]
+
+[[target]]
+name = "structures/png-oxipng-libdeflater-512"
+tags = [ "release" ]
+include_tags = [ "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "directory", flat = true, filenames = "codepoint" }
+include_files = [ "../LICENSE" ]
+
+[[target]]
+name = "structures/png-oxipng-libdeflater-512"
+tags = [ "release" ]
+include_tags = [ "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "directory", flat = false, filenames = "codepoint" }
+include_files = [ "../LICENSE" ]

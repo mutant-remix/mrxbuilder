@@ -1,0 +1,20 @@
+[[target]]
+name = "sizes/png-oxipng-libdeflater-512"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 512, compression = 12.0 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }
+
+[[target]]
+name = "sizes/png-oxipng-libdeflater-256"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 256, compression = 12.0 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }
+
+[[target]]
+name = "sizes/png-oxipng-libdeflater-128"
+tags = [ "release" ]
+include_tags = [ "extra", "unicode" ]
+output = { format = "png-oxipng-libdeflater", size = 128, compression = 12.0 }
+structure = { container = "directory", flat = true, filenames = "shortcode" }

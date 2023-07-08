@@ -1,6 +1,0 @@
-[[target]]
-name = "debug-svg"
-tags = [ "debug" ]
-include_tags = [ "unicode", "extra" ]
-output = { format = "svg" }
-structure = { container = "directory", flat = true, filenames = "shortcode" }
