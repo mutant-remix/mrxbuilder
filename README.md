@@ -48,7 +48,7 @@ git clone https://github.com/mutant-remix/mrxbuilder
 - Rust toolchain
 - nasm (for building `rav1e`)
 
-Windows 8+
+Windows 10+
 > Note: You can use WSL instead
 ```bash
 winget install -e --id=Rustlang.Rustup
