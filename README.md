@@ -55,9 +55,9 @@ winget install -e --id=Rustlang.Rustup
 winget install -e --id=NASM.NASM
 
 # Command prompt
-setx PATH "%PATH%;%appdata%\Local\bin\NASM\nasm.exe"
+setx PATH "%PATH%;%USERPROFILE%\AppData\Local\bin\NASM\nasm.exe"
 # Powershell
-$env:Path += ";%appdata%\Local\bin\NASM\nasm.exe"
+$env:Path += ";%USERPROFILE%\AppData\Local\bin\NASM\nasm.exe"
 
 # Restart your terminal
 rustup default stable-gnu # or 'stable-msvc' if you have Visual Studio
@@ -66,7 +66,7 @@ rustup default stable-gnu # or 'stable-msvc' if you have Visual Studio
 
 Debian-based Linux (Ubuntu, Pop!_OS, etc.)
 ```bash
-apt install build-essential nasm
+apt install build-essential nasm curl
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # select 1
 ```
 
@@ -84,7 +84,7 @@ rustup-init # select 1
 
 Mac OS
 ```bash
-brew install nasm
+brew install nasm curl
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # select 1
 ```
 
