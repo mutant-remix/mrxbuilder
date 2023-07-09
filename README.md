@@ -54,25 +54,33 @@ git clone https://github.com/mutant-remix/mrxbuilder
 winget install -e --id=Rustlang.Rustup
 winget install -e --id=NASM.NASM
 
-rustup install stable-gnu # or stable-msvc if you have Visual Studio
+rustup default stable-gnu # or 'stable-msvc' if you have Visual Studio
 ```
+
+On Windows, you will have to restart your terminal to update PATH if you get errors about `cargo` not being found.
 
 **Debian**
 ```bash
 apt install build-essential nasm
-curl https://sh.rustup.rs | sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # select 1
 ```
 
 **Arch**
 ```bash
 pacman -Sy base-devel rustup nasm
-rustup install stable
+rustup default stable
 ```
 
 **Alpine**
 ```bash
 apk add build-base rustup nasm
-rustup-init
+rustup-init # select 1
+```
+
+**Mac OS**
+```bash
+brew install nasm
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # select 1
 ```
 
 #### Build and run
