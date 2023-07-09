@@ -22,7 +22,9 @@ If you are moving from **orxporter**, check out the [manifest porter](https://gi
 Check out the [documentation](./docs) and [sample input](./sample-input) for input manifest and output metadata specifications and examples.
 
 ## Usage
-The builder is run from the command line. It takes 3-4 arguments:
+This guide assumes general familiarity with the command line. mrxbuilder has no GUI, but there is not
+
+mrxbuilder is run from the command line. It takes 3-4 arguments:
 - path to the index manifest file
 - output path (cache is also stored here)
 - tags for the targets to build (comma separated)
@@ -32,42 +34,53 @@ The builder is run from the command line. It takes 3-4 arguments:
 **Download** a prebuilt binary for your platform from the [releases page](https://github.com/mutant-remix/mrxbuilder/releases)
 
 ```bash
-./mrxbuilder-v*-* ./input/index.toml ./output debug,release [--dry]
+./mrxbuilder-v*-* ./sample-input/index.toml ./output debug,release [--dry]
 ```
 
 ### Manual build
+#### Clone the repository
+```bash
+git clone https://github.com/mutant-remix/mrxbuilder
+```
+
 #### Dependencies
 - Basic build tools
-```bash
-# Windows
-winget install -e --id Microsoft.VisualStudio.2022.BuildTools \
-    --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools;includeRecommended"
-apt install build-essential # Debian
-pacman -Sy base-devel # Arch
-apk add build-base # Alpine
-```
 - Rust toolchain
-```bash
-winget install -e --id=Rustlang.Rustup; rustup install stable # Windows
-curl https://sh.rustup.rs | sh; rustup install stable # Debian
-pacman -Sy rustup; rustup install stable # Arch
-apk add rustup; rustup-init # Alpine
-```
 - nasm (for building `rav1e`)
+
+**Windows**
+> Note: You can use WSL instead
 ```bash
-winget install -e --id=NASM.NASM # Windows
-apt install nasm # Debian
-pacman -Sy nasm # Arch
-apk add nasm # Alpine
+winget install -e --id=Rustlang.Rustup
+winget install -e --id=NASM.NASM
+
+rustup install stable-gnu # or stable-msvc if you have Visual Studio
+```
+
+**Debian**
+```bash
+apt install build-essential nasm
+curl https://sh.rustup.rs | sh
+```
+
+**Arch**
+```bash
+pacman -Sy base-devel rustup nasm
+rustup install stable
+```
+
+**Alpine**
+```bash
+apk add build-base rustup nasm
+rustup-init
 ```
 
 #### Build and run
 ```bash
-cargo build --release
-# or use mold to speed up the build (linux only)
-mold -run cargo build --release
+cargo run --release -- ./sample-input/index.toml ./out debug,release [--dry]
 
-cargo run --release -- ./manifest/index.toml ./out debug,release [--dry]
+# or use mold for faster builds (linux only, optional)
+mold -run cargo run --release -- ./sample-input/index.toml ./out debug,release [--dry]
 ```
 
 > Note: Do not run it without the `--release` flag, as it will be **extremely** slow.
