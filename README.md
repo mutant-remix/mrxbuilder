@@ -28,17 +28,45 @@ The builder is run from the command line. It takes 3-4 arguments:
 - tags for the targets to build (comma separated)
 - `--dry` flag to skip writing any files
 
-#### Prebuilt binaries
-Download a prebuilt binary for your platform from the [releases page](https://github.com/mutant-remix/mrxbuilder/releases)
+### Prebuilt binaries
+**Download** a prebuilt binary for your platform from the [releases page](https://github.com/mutant-remix/mrxbuilder/releases)
 
 ```bash
-./builder ./input/index.toml ./output debug,release [--dry]
+./mrxbuilder-v*-* ./input/index.toml ./output debug,release [--dry]
 ```
 
-#### Manual build
-You will need to have Rust installed. The simplest way is to use [rustup](https://rustup.rs/).
-
+### Manual build
+#### Dependencies
+- Basic build tools
+```bash
+# Windows
+winget install -e --id Microsoft.VisualStudio.2022.BuildTools \
+    --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools;includeRecommended"
+apt install build-essential # Debian
+pacman -Sy base-devel # Arch
+apk add build-base # Alpine
 ```
+- Rust toolchain
+```bash
+winget install -e --id=Rustlang.Rustup; rustup install stable # Windows
+curl https://sh.rustup.rs | sh; rustup install stable # Debian
+pacman -Sy rustup; rustup install stable # Arch
+apk add rustup; rustup-init # Alpine
+```
+- nasm (for building `rav1e`)
+```bash
+winget install -e --id=NASM.NASM # Windows
+apt install nasm # Debian
+pacman -Sy nasm # Arch
+apk add nasm # Alpine
+```
+
+#### Build and run
+```bash
+cargo build --release
+# or use mold to speed up the build (linux only)
+mold -run cargo build --release
+
 cargo run --release -- ./manifest/index.toml ./out debug,release [--dry]
 ```
 
