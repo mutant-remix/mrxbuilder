@@ -60,7 +60,7 @@ setx PATH "%PATH%;%USERPROFILE%\AppData\Local\bin\NASM\nasm.exe"
 $env:Path += ";%USERPROFILE%\AppData\Local\bin\NASM\nasm.exe"
 
 # Restart your terminal
-rustup default stable-gnu # or 'stable-msvc' if you have Visual Studio
+rustup default stable
 # Restart your terminal again
 ```
 
