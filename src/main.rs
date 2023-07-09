@@ -63,5 +63,9 @@ fn main() {
     pack.load_all(&manifest_path);
     pack.build_tags(tags, dry);
 
+    if let Some(save_thread) = pack.save_thread.take() {
+        save_thread.join().unwrap();
+    }
+
     pack.logger.finish()
 }

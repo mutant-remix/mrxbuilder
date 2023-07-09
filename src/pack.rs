@@ -1,8 +1,9 @@
-use std::collections::HashMap;
-use std::path::PathBuf;
 use crate::load::manifest::{Colormap, Emoji, Target};
 use crate::process::cache::Cache;
 use crate::Logger;
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::thread::JoinHandle;
 
 #[derive(Debug)]
 pub struct Pack {
@@ -13,6 +14,7 @@ pub struct Pack {
     pub definitions: HashMap<String, String>,
     pub output_path: PathBuf,
     pub logger: Logger,
+    pub save_thread: Option<JoinHandle<()>>,
 }
 
 impl Pack {
@@ -25,6 +27,7 @@ impl Pack {
             definitions: HashMap::new(),
             output_path,
             logger,
+            save_thread: None,
         }
     }
 }

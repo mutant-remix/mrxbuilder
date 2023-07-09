@@ -1,5 +1,5 @@
 use serde::Serialize;
-use std::{collections::HashMap, num::{IntErrorKind::Empty, ParseIntError}};
+use std::collections::HashMap;
 
 use crate::process::EmojiEncoded;
 
@@ -17,6 +17,7 @@ struct Emoji {
     category: Vec<String>,
     description: String,
 }
+
 pub fn generate_metadata(emojis: &Vec<EmojiEncoded>) -> String {
     let mut groups: HashMap<String, Vec<Emoji>> = HashMap::new();
 
@@ -39,7 +40,12 @@ pub fn generate_metadata(emojis: &Vec<EmojiEncoded>) -> String {
             None => None,
         };
 
-        let shortcodes = emoji.emoji.shortcodes.iter().map(|s| format!(":{}:", s)).collect();
+        let shortcodes = emoji
+            .emoji
+            .shortcodes
+            .iter()
+            .map(|s| format!(":{}:", s))
+            .collect();
 
         let emoji = Emoji {
             base,
@@ -54,10 +60,7 @@ pub fn generate_metadata(emojis: &Vec<EmojiEncoded>) -> String {
 
     let mut final_groups: Vec<Group> = Vec::new();
     for (group, emojis) in groups {
-        final_groups.push(Group {
-            group,
-            emojis,
-        });
+        final_groups.push(Group { group, emojis });
     }
 
     serde_json::to_string_pretty(&final_groups).unwrap()

@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, thread};
 use rayon::prelude::*;
 
 pub mod encode;
@@ -45,7 +45,7 @@ impl Pack {
             targets.len(),
             tags.join(", ")
         ));
-        self.logger.set_stage_count(self.targets.len() * 2 + 1);
+        self.logger.set_stage_count(self.targets.len() + 1);
 
         for target in targets {
             self.logger
@@ -136,68 +136,74 @@ impl Pack {
                 emoji.filename = Some(filename);
             });
 
-            // Generate metadata
-            let mut categories = Vec::new();
-            for emoji in &emojis {
-                let category = emoji.emoji.category[0].clone();
-
-                if !categories.contains(&category) {
-                    categories.push(category);
-                }
-            }
-
-            let mut stage = self.logger.new_stage("Writing", emojis.len() + target.include_files.len());
-
+            // Save on a separate thread
+            // To continue encoding while saving
             let path = self.output_path.join(&target.name);
-            let mut package = Package::new(&target.output_structure.container, &path, dry);
+            let target = target.clone();
 
-            // Write emojis
-            for emoji in &emojis {
-                stage.inc();
+            if let Some(save_thread) = self.save_thread.take() {
+                save_thread.join().unwrap();
+            }
 
-                match &target.output_format {
-                    OutputFormat::None => {},
-                    OutputFormat::Svg => {
-                        package.add_file(
-                            &emoji.emoji.svg.as_ref().unwrap().0.as_bytes().to_vec(),
-                            emoji.filename.as_ref().unwrap()
-                        );
-                    }
-                    OutputFormat::Raster { format: _, size: _ } => {
-                        package.add_file(
-                            emoji.raster.as_ref().unwrap(),
-                            emoji.filename.as_ref().unwrap()
-                        );
+            let save_thread = thread::spawn(move || {
+                // Generate metadata
+                let mut categories = Vec::new();
+                for emoji in &emojis {
+                    let category = emoji.emoji.category[0].clone();
+
+                    if !categories.contains(&category) {
+                        categories.push(category);
                     }
                 }
-            }
 
-            // Write metadata
-            let metadata = generate_metadata(&emojis);
-            package.add_file(&metadata.as_bytes().to_vec(), "metadata.json");
+                let mut package = Package::new(&target.output_structure.container, &path, dry);
 
-            // Write extra files
-            for file in target.include_files.iter() {
-                let filename = match file.file_name() {
-                    Some(filename) => filename.to_str().unwrap(),
-                    None => {
-                        panic!("Failed to get filename for file '{}' while building target '{}'", file.display(), target.name);
+                // Write emojis
+                for emoji in &emojis {
+                    match &target.output_format {
+                        OutputFormat::None => {},
+                        OutputFormat::Svg => {
+                            package.add_file(
+                                &emoji.emoji.svg.as_ref().unwrap().0.as_bytes().to_vec(),
+                                emoji.filename.as_ref().unwrap()
+                            );
+                        }
+                        OutputFormat::Raster { format: _, size: _ } => {
+                            package.add_file(
+                                emoji.raster.as_ref().unwrap(),
+                                emoji.filename.as_ref().unwrap()
+                            );
+                        }
                     }
-                };
+                }
 
-                match fs::read(file) {
-                    Ok(file) => {
-                        package.add_file(&file, filename);
-                    },
-                    Err(error) => {
-                        panic!("Failed to read file '{}' while building target '{}': {}", file.display(), target.name, error);
-                    }
-                };
+                // Write metadata
+                let metadata = generate_metadata(&emojis);
+                package.add_file(&metadata.as_bytes().to_vec(), "metadata.json");
 
-                stage.inc();
-            }
+                // Write extra files
+                for file in target.include_files.iter() {
+                    let filename = match file.file_name() {
+                        Some(filename) => filename.to_str().unwrap(),
+                        None => {
+                            panic!("Failed to get filename for file '{}' while building target '{}'", file.display(), target.name);
+                        }
+                    };
 
-            package.finish();
+                    match fs::read(file) {
+                        Ok(file) => {
+                            package.add_file(&file, filename);
+                        },
+                        Err(error) => {
+                            panic!("Failed to read file '{}' while building target '{}': {}", file.display(), target.name, error);
+                        }
+                    };
+                }
+
+                package.finish();
+            });
+
+            self.save_thread = Some(save_thread);
         }
     }
 }
