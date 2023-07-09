@@ -48,36 +48,41 @@ git clone https://github.com/mutant-remix/mrxbuilder
 - Rust toolchain
 - nasm (for building `rav1e`)
 
-**Windows**
+Windows 8+
 > Note: You can use WSL instead
 ```bash
 winget install -e --id=Rustlang.Rustup
 winget install -e --id=NASM.NASM
 
+# Command prompt
+setx PATH "%PATH%;%appdata%\Local\bin\NASM\nasm.exe"
+# Powershell
+$env:Path += ";%appdata%\Local\bin\NASM\nasm.exe"
+
+# Restart your terminal
 rustup default stable-gnu # or 'stable-msvc' if you have Visual Studio
+# Restart your terminal again
 ```
 
-On Windows, you will have to restart your terminal to update PATH if you get errors about `cargo` not being found.
-
-**Debian**
+Debian-based Linux (Ubuntu, Pop!_OS, etc.)
 ```bash
 apt install build-essential nasm
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # select 1
 ```
 
-**Arch**
+Arch-based Linux (Arch, Manjaro, etc.)
 ```bash
 pacman -Sy base-devel rustup nasm
 rustup default stable
 ```
 
-**Alpine**
+Alpine Linux
 ```bash
 apk add build-base rustup nasm
 rustup-init # select 1
 ```
 
-**Mac OS**
+Mac OS
 ```bash
 brew install nasm
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # select 1
