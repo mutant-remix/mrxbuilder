@@ -11,7 +11,8 @@ struct Group {
 
 #[derive(Serialize)]
 struct Emoji {
-    base: Option<Vec<usize>>,
+    codepoint: Option<Vec<u64>>,
+    root_codepoint: Option<Vec<u64>>,
     src: Option<String>,
     shortcodes: Vec<String>,
     category: Vec<String>,
@@ -27,13 +28,26 @@ pub fn generate_metadata(emojis: &Vec<EmojiEncoded>) -> String {
             groups.insert(group.clone(), Vec::new());
         }
 
-        let base: Option<Vec<usize>> = match emoji.emoji.codepoint.as_ref() {
+        let codepoint: Option<Vec<u64>> = match emoji.emoji.codepoint.as_ref() {
             Some(codepoint) => Some(
                 codepoint
                     .iter()
                     .map(|codepoint| {
                         let codepoint = codepoint.replace("U+", "");
-                        usize::from_str_radix(&codepoint, 16).unwrap()
+                        u64::from_str_radix(&codepoint, 16).unwrap()
+                    })
+                    .collect(),
+            ),
+            None => None,
+        };
+
+        let root_codepoint: Option<Vec<u64>> = match emoji.emoji.root_codepoint.as_ref() {
+            Some(codepoint) => Some(
+                codepoint
+                    .iter()
+                    .map(|codepoint| {
+                        let codepoint = codepoint.replace("U+", "");
+                        u64::from_str_radix(&codepoint, 16).unwrap()
                     })
                     .collect(),
             ),
@@ -48,7 +62,8 @@ pub fn generate_metadata(emojis: &Vec<EmojiEncoded>) -> String {
             .collect();
 
         let emoji = Emoji {
-            base,
+            codepoint,
+            root_codepoint: root_codepoint,
             src: emoji.filename.clone(),
             category: emoji.emoji.category.clone(),
             shortcodes,

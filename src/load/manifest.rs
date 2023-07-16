@@ -68,6 +68,7 @@ pub struct Emoji {
     pub description: String,
     pub tags: Vec<String>,
     pub codepoint: Option<Vec<String>>,
+    pub root_codepoint: Option<Vec<String>>,
     pub shortcodes: Vec<String>,
     pub colormaps: Vec<String>,
 }
@@ -380,7 +381,28 @@ impl Pack {
                                 .map(|c| match c.as_str() {
                                     Some(c) => c.to_string(),
                                     None => panic!(
-                                        "Emoji codepoint is not a string in {:?}",
+                                        "Emoji 'codepoint' component is not a string in {:?}",
+                                        manifest_path
+                                    ),
+                                })
+                                .collect(),
+                        ),
+                        None => None,
+                    };
+
+                    let root_codepoint: Option<Vec<String>> = match emoji.get("root_codepoint") {
+                        Some(codepoint) => Some(
+                            codepoint
+                                .as_array()
+                                .expect(&format!(
+                                    "Emoji 'root_codepoint' is not an array in {:?}",
+                                    manifest_path
+                                ))
+                                .iter()
+                                .map(|c| match c.as_str() {
+                                    Some(c) => c.to_string(),
+                                    None => panic!(
+                                        "Emoji 'root_codepoint' component is not a string in {:?}",
                                         manifest_path
                                     ),
                                 })
@@ -400,7 +422,7 @@ impl Pack {
                             .map(|s| match s.as_str() {
                                 Some(s) => s.to_string(),
                                 None => {
-                                    panic!("Emoji contains invalid shortcode (must be a string) in {:?}", manifest_path)
+                                    panic!("Emoji contains invalid 'shortcode' (must be a string) in {:?}", manifest_path)
                                 }
                             })
                             .collect(),
@@ -418,7 +440,7 @@ impl Pack {
                             .map(|c| match c.as_str() {
                                 Some(c) => c.to_string(),
                                 None => {
-                                    panic!("Emoji colormap is not a string in {:?}", manifest_path)
+                                    panic!("Emoji 'colormap' is not a string in {:?}", manifest_path)
                                 }
                             })
                             .collect(),
@@ -433,6 +455,7 @@ impl Pack {
                         category,
                         tags,
                         codepoint,
+                        root_codepoint,
                         shortcodes,
                         colormaps,
                     });

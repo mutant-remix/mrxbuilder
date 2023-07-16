@@ -47,6 +47,7 @@ description = "something"
 tags = [ "extra" ]
 shortcodes = [ "victory_hand%shortcode", "v%shortcode" ]
 codepoint = [ "U+270C", "$zwj", "%codepoint" ]
+root_codepoint = [ "U+270C" ]
 colormaps = [ "$skintones.extra" ]
 
 [[emoji]]
@@ -55,6 +56,7 @@ name = "Victory hand (human)"
 category = [ "expressions", "skintones", "human" ]
 description = "something"
 tags = [ "unicode" ]
-codepoint = [ "U+270C", "$vs16" ]
+codepoint = [ "U+270C" ]
+root_codepoint = [ "U+270C" ]
 shortcodes = [ "victory_hand", "v" ]
 colormaps = [ "%skintones.default" ]
