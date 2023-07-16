@@ -64,6 +64,7 @@ fn main() {
     pack.build_tags(tags, dry);
 
     if let Some(save_thread) = pack.save_thread.take() {
+        pack.logger.info("Waiting for save thread to finish...");
         save_thread.join().unwrap();
     }
 
