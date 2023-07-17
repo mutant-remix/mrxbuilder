@@ -2,7 +2,7 @@ use crate::load::manifest::{Container, TarCompression};
 use bzip2::{write::BzEncoder, Compression as BzipCompression};
 use std::{
     fs::{self, File},
-    io::{ErrorKind::NotFound, Write},
+    io::{Error, ErrorKind::NotFound, Write, BufWriter},
     path::PathBuf,
 };
 use tar::{Builder as TarBuilder, Header as TarHeader};
@@ -12,17 +12,17 @@ use zstd::stream::write::Encoder as ZstdEncoder;
 use libflate::gzip::Encoder as GzipEncoder;
 
 enum TarCompressor<'a> {
-    None(TarBuilder<File>),
-    Gzip(TarBuilder<GzipEncoder<File>>),
-    Bzip2(TarBuilder<BzEncoder<File>>),
-    Xz(TarBuilder<XzEncoder<File>>),
-    Zstd(TarBuilder<ZstdEncoder<'a, File>>),
+    None(TarBuilder<BufWriter<File>>),
+    Gzip(TarBuilder<GzipEncoder<BufWriter<File>>>),
+    Bzip2(TarBuilder<BzEncoder<BufWriter<File>>>),
+    Xz(TarBuilder<XzEncoder<BufWriter<File>>>),
+    Zstd(TarBuilder<ZstdEncoder<'a, BufWriter<File>>>),
 }
 
 enum PackageKind<'a> {
     Dry,
     Directory,
-    Zip(ZipWriter<File>, ZipCompressionMethod),
+    Zip(ZipWriter<BufWriter<File>>, ZipCompressionMethod),
     Tar(TarCompressor<'a>),
 }
 pub struct Package<'a> {
@@ -67,6 +67,7 @@ impl Package<'_> {
                             );
                         }
                     };
+                    let file = BufWriter::new(file);
 
                     PackageKind::Zip(ZipWriter::new(file), *compression)
                 }
@@ -88,6 +89,7 @@ impl Package<'_> {
                             );
                         }
                     };
+                    let file = BufWriter::new(file);
 
                     match compression {
                         TarCompression::None => {
@@ -157,6 +159,7 @@ impl Package<'_> {
                 header.set_mode(0o644);
                 header.set_cksum();
 
+                // This code has to be duplicated because of the different types of the writer
                 let result = match writer {
                     TarCompressor::None(writer) => {
                         writer.append_data(&mut header, filename, file.as_slice())
@@ -222,25 +225,35 @@ impl Package<'_> {
             PackageKind::Tar(writer) => {
                 let writer = writer;
 
-                let result = match writer {
+                // This code has to be ugly because of the different types of the writer
+                // They have roughly the same interface, but they are not the same type
+                let result: Result<_, Error> = match writer {
                     TarCompressor::None(mut writer) => {
                         writer.finish()
                     },
                     TarCompressor::Gzip(writer) => {
-                        writer.into_inner().unwrap().finish().unwrap();
-                        Ok(())
+                        match writer.into_inner().unwrap().finish().into_result() {
+                            Ok(_) => Ok(()),
+                            Err(err) => Err(err)
+                        }
                     },
                     TarCompressor::Bzip2(writer) => {
-                        writer.into_inner().unwrap().finish().unwrap();
-                        Ok(())
+                        match writer.into_inner().unwrap().finish() {
+                            Ok(_) => Ok(()),
+                            Err(err) => Err(err)
+                        }
                     },
                     TarCompressor::Xz(writer) => {
-                        writer.into_inner().unwrap().finish().unwrap();
-                        Ok(())
+                        match writer.into_inner().unwrap().finish() {
+                            Ok(_) => Ok(()),
+                            Err(err) => Err(err)
+                        }
                     },
                     TarCompressor::Zstd(writer) => {
-                        writer.into_inner().unwrap().finish().unwrap();
-                        Ok(())
+                        match writer.into_inner().unwrap().finish() {
+                            Ok(_) => Ok(()),
+                            Err(err) => Err(err)
+                        }
                     }
                 };
 
