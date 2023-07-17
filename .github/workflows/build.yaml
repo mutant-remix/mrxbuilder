@@ -9,14 +9,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-mrxbuilder:
+  build:
     strategy:
       matrix:
         target:
           - name: x86_64-windows
             triple: x86_64-pc-windows-msvc
             extension: .exe
-            docker: ""
             runner: windows-latest
 
           - name: x86_64-linux-musl
@@ -27,7 +26,6 @@ jobs:
           - name: x86_64-macos
             triple: x86_64-apple-darwin
             extension: ""
-            docker: ""
             runner: macos-latest
 
     runs-on: ${{ matrix.target.runner }}
@@ -36,14 +34,14 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Cache Cargo dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo
           key: ${{ matrix.target.triple }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ matrix.target.triple }}-cargo-
 
       - name: Cache build artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: target
           key: ${{ matrix.target.triple }}-target-${{ hashFiles('**/Cargo.lock') }}
@@ -87,7 +85,7 @@ jobs:
           name: ${{ matrix.target.name }}
           path: mrxbuilder-v${{ steps.get_version.outputs.version }}-${{ matrix.target.name }}${{ matrix.target.extension }}
 
-  test-mrxbuilder:
+  test:
     strategy:
       matrix:
         runner:
@@ -95,7 +93,7 @@ jobs:
           - macos-latest
           - windows-latest
 
-    needs: build-mrxbuilder
+    needs: build
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -133,7 +131,7 @@ jobs:
           path: out
 
   publish-draft-release:
-    needs: test-mrxbuilder
+    needs: test
     runs-on: ubuntu-latest
 
     # Only run this job on manual trigger
