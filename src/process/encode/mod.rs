@@ -1,6 +1,6 @@
 use core::num::NonZeroU8;
-use oxipng::Deflaters;
 use image::RgbaImage;
+use oxipng::Deflaters;
 
 pub mod avif;
 pub mod png_image;
@@ -21,7 +21,7 @@ pub enum EncodeTarget {
         quality: f32, // 100.0-0.0
         speed: u8,    // 1-10
     },
-    Webp
+    Webp,
 }
 
 impl EncodeTarget {
@@ -38,9 +38,12 @@ impl EncodeTarget {
 pub fn encode_raster(raster: &RgbaImage, target: &EncodeTarget) -> Vec<u8> {
     match target {
         EncodeTarget::PngOxipng(oxipng_mode) => match oxipng_mode {
-            OxiPngMode::Libdeflater(compression) => {
-                png_oxipng::encode(&raster, Deflaters::Libdeflater { compression: *compression })
-            }
+            OxiPngMode::Libdeflater(compression) => png_oxipng::encode(
+                &raster,
+                Deflaters::Libdeflater {
+                    compression: *compression,
+                },
+            ),
             OxiPngMode::Zopfli(iterations) => png_oxipng::encode(
                 &raster,
                 Deflaters::Zopfli {

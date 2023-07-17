@@ -76,7 +76,9 @@ impl Logger {
                 String::from(env!("CARGO_PKG_VERSION"))
             );
             println!("github.com/mutant-remix/mrxbuilder");
-            println!("Running in no tty mode with pretty printing disabled due to unsupported terminal");
+            println!(
+                "Running in no tty mode with pretty printing disabled due to unsupported terminal"
+            );
             println!();
 
             return Self {
@@ -136,9 +138,7 @@ impl Logger {
 
                 Bar::new(Some(current_bar))
             }
-            Bar::Notty(_) => {
-                Bar::new(None)
-            }
+            Bar::Notty(_) => Bar::new(None),
         }
     }
 
@@ -168,7 +168,8 @@ impl Logger {
     pub fn load(&mut self, message: &str) {
         match &mut self.total_bar {
             Bar::Tty(_) => {
-                self.total_bar.write(&format!("{} {}", "LOAD ".colorize("bold yellow"), message));
+                self.total_bar
+                    .write(&format!("{} {}", "LOAD ".colorize("bold yellow"), message));
             }
             Bar::Notty(_) => {
                 println!("LOAD {}", message);
@@ -179,7 +180,8 @@ impl Logger {
     pub fn info(&mut self, message: &str) {
         match &mut self.total_bar {
             Bar::Tty(_) => {
-                self.total_bar.write(&format!("{} {}", "INFO ".colorize("bold blue"), message));
+                self.total_bar
+                    .write(&format!("{} {}", "INFO ".colorize("bold blue"), message));
             }
             Bar::Notty(_) => {
                 println!("INFO  {}", message);
@@ -190,7 +192,8 @@ impl Logger {
     pub fn build(&mut self, message: &str) {
         match &mut self.total_bar {
             Bar::Tty(_) => {
-                self.total_bar.write(&format!("{} {}", "BUILD".colorize("bold magenta"), message));
+                self.total_bar
+                    .write(&format!("{} {}", "BUILD".colorize("bold magenta"), message));
             }
             Bar::Notty(_) => {
                 println!("BUILD {}", message);

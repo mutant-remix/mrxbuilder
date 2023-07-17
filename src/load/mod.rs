@@ -28,7 +28,8 @@ impl Pack {
         stage.inc();
         self.resolve_variables();
 
-        self.logger.load(&format!("Resolving colormaps and recoloring"));
+        self.logger
+            .load(&format!("Resolving colormaps and recoloring"));
         stage.inc();
         self.resolve_colormaps();
 

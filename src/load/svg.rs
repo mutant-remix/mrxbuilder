@@ -1,11 +1,11 @@
 use rayon::prelude::*;
+use regex::Regex;
 use resvg::usvg::Color;
 use std::{fmt, fs, path::PathBuf};
 use svgcleaner::{
     cleaner::{clean_doc, parse_data},
     CleaningOptions, ParseOptions, WriteOptions,
 };
-use regex::Regex;
 
 use crate::load::Pack;
 

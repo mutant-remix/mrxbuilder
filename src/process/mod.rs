@@ -1,5 +1,5 @@
-use std::{fs, thread};
 use rayon::prelude::*;
+use std::{fs, thread};
 
 pub mod encode;
 use encode::encode_raster;
@@ -15,7 +15,7 @@ use metadata::generate_metadata;
 mod package;
 use package::Package;
 
-use crate::load::manifest::{OutputFormat, FilenameFormat, Emoji};
+use crate::load::manifest::{Emoji, FilenameFormat, OutputFormat};
 use crate::Pack;
 
 pub struct EmojiEncoded {
@@ -161,17 +161,17 @@ impl Pack {
                 // Write emojis
                 for emoji in &emojis {
                     match &target.output_format {
-                        OutputFormat::None => {},
+                        OutputFormat::None => {}
                         OutputFormat::Svg => {
                             package.add_file(
                                 &emoji.emoji.svg.as_ref().unwrap().0.as_bytes().to_vec(),
-                                emoji.filename.as_ref().unwrap()
+                                emoji.filename.as_ref().unwrap(),
                             );
                         }
                         OutputFormat::Raster { format: _, size: _ } => {
                             package.add_file(
                                 emoji.raster.as_ref().unwrap(),
-                                emoji.filename.as_ref().unwrap()
+                                emoji.filename.as_ref().unwrap(),
                             );
                         }
                     }
@@ -186,16 +186,25 @@ impl Pack {
                     let filename = match file.file_name() {
                         Some(filename) => filename.to_str().unwrap(),
                         None => {
-                            panic!("Failed to get filename for file '{}' while building target '{}'", file.display(), target.name);
+                            panic!(
+                                "Failed to get filename for file '{}' while building target '{}'",
+                                file.display(),
+                                target.name
+                            );
                         }
                     };
 
                     match fs::read(file) {
                         Ok(file) => {
                             package.add_file(&file, filename);
-                        },
+                        }
                         Err(error) => {
-                            panic!("Failed to read file '{}' while building target '{}': {}", file.display(), target.name, error);
+                            panic!(
+                                "Failed to read file '{}' while building target '{}': {}",
+                                file.display(),
+                                target.name,
+                                error
+                            );
                         }
                     };
                 }

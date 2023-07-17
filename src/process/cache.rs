@@ -1,5 +1,5 @@
-use std::{fs, path::PathBuf, fmt};
 use crate::process::encode::EncodeTarget;
+use std::{fmt, fs, path::PathBuf};
 
 pub struct Cache {
     path: PathBuf,
@@ -26,7 +26,7 @@ impl Cache {
 
     pub fn save(&self, svg: &str, format: &EncodeTarget, size: u32, raster: &Vec<u8>) {
         match fs::create_dir_all(&self.path) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => panic!("Failed to create cache directory: {}", err),
         }
 
@@ -37,7 +37,7 @@ impl Cache {
         path.set_extension(format.to_extension());
 
         match fs::write(path, raster) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(err) => panic!("Failed to write cache file: {}", err),
         }
     }

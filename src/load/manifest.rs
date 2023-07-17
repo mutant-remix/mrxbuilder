@@ -256,7 +256,7 @@ impl Pack {
                                             .collect::<Vec<String>>();
 
                                         Some(codepoint)
-                                    },
+                                    }
                                     None => panic!(
                                         "Colormap codepoint is not an array in {:?}",
                                         manifest_path
@@ -440,7 +440,10 @@ impl Pack {
                             .map(|c| match c.as_str() {
                                 Some(c) => c.to_string(),
                                 None => {
-                                    panic!("Emoji 'colormap' is not a string in {:?}", manifest_path)
+                                    panic!(
+                                        "Emoji 'colormap' is not a string in {:?}",
+                                        manifest_path
+                                    )
                                 }
                             })
                             .collect(),
@@ -477,7 +480,7 @@ impl Pack {
                                 }
 
                                 name.to_string()
-                            },
+                            }
                             None => panic!("Target name is not a string in {:?}", manifest_path),
                         },
                         None => panic!("Target is missing 'name' in {:?}", manifest_path),
@@ -549,11 +552,14 @@ impl Pack {
                             };
 
                             let flat = match structure.get("flat") {
-                                Some(flat) =>
-                                    flat
-                                    .as_bool()
-                                    .expect(&format!("Target contains invalid 'structure.flat' '{}' in {:?}", flat, manifest_path)),
-                                None => panic!("Target is missing 'structure.flat' in {:?}", manifest_path),
+                                Some(flat) => flat.as_bool().expect(&format!(
+                                    "Target contains invalid 'structure.flat' '{}' in {:?}",
+                                    flat, manifest_path
+                                )),
+                                None => panic!(
+                                    "Target is missing 'structure.flat' in {:?}",
+                                    manifest_path
+                                ),
                             };
 
                             OutputStructure {

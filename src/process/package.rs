@@ -1,15 +1,15 @@
 use crate::load::manifest::{Container, TarCompression};
 use bzip2::{write::BzEncoder, Compression as BzipCompression};
+use libflate::gzip::Encoder as GzipEncoder;
 use std::{
     fs::{self, File},
-    io::{Error, ErrorKind::NotFound, Write, BufWriter},
+    io::{BufWriter, Error, ErrorKind::NotFound, Write},
     path::PathBuf,
 };
 use tar::{Builder as TarBuilder, Header as TarHeader};
 use xz2::write::XzEncoder;
 use zip::{write::FileOptions, CompressionMethod as ZipCompressionMethod, ZipWriter};
 use zstd::stream::write::Encoder as ZstdEncoder;
-use libflate::gzip::Encoder as GzipEncoder;
 
 enum TarCompressor<'a> {
     None(TarBuilder<BufWriter<File>>),
@@ -211,7 +211,6 @@ impl Package<'_> {
     }
 
     pub fn finish(self) {
-
         match self.kind {
             PackageKind::Dry => {}
             PackageKind::Zip(mut writer, _) => {
@@ -228,33 +227,25 @@ impl Package<'_> {
                 // This code has to be ugly because of the different types of the writer
                 // They have roughly the same interface, but they are not the same type
                 let result: Result<_, Error> = match writer {
-                    TarCompressor::None(mut writer) => {
-                        writer.finish()
-                    },
+                    TarCompressor::None(mut writer) => writer.finish(),
                     TarCompressor::Gzip(writer) => {
                         match writer.into_inner().unwrap().finish().into_result() {
                             Ok(_) => Ok(()),
-                            Err(err) => Err(err)
-                        }
-                    },
-                    TarCompressor::Bzip2(writer) => {
-                        match writer.into_inner().unwrap().finish() {
-                            Ok(_) => Ok(()),
-                            Err(err) => Err(err)
-                        }
-                    },
-                    TarCompressor::Xz(writer) => {
-                        match writer.into_inner().unwrap().finish() {
-                            Ok(_) => Ok(()),
-                            Err(err) => Err(err)
-                        }
-                    },
-                    TarCompressor::Zstd(writer) => {
-                        match writer.into_inner().unwrap().finish() {
-                            Ok(_) => Ok(()),
-                            Err(err) => Err(err)
+                            Err(err) => Err(err),
                         }
                     }
+                    TarCompressor::Bzip2(writer) => match writer.into_inner().unwrap().finish() {
+                        Ok(_) => Ok(()),
+                        Err(err) => Err(err),
+                    },
+                    TarCompressor::Xz(writer) => match writer.into_inner().unwrap().finish() {
+                        Ok(_) => Ok(()),
+                        Err(err) => Err(err),
+                    },
+                    TarCompressor::Zstd(writer) => match writer.into_inner().unwrap().finish() {
+                        Ok(_) => Ok(()),
+                        Err(err) => Err(err),
+                    },
                 };
 
                 match result {
