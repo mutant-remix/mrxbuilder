@@ -114,7 +114,7 @@ The `name` of the variable must start with `$`.
 
 `$` variables will only get resolved in:
 - `colormap` entry keys and values
-- `colormap.codepoint` (**not** expanded)
+- `colormap.codepoint` (expanded)
 - `emoji.codepoint` (expanded)
 - `emoji.colormaps` (expanded)
 
@@ -164,13 +164,14 @@ description = "The flag of Lithuania"
 - `description` - used for metadata
 - `category` - used for metadata and structure
 > The first `category` will be used as the group in the metadata
-- `codepoint`: single codepoint split into parts, each starting with `U+`
+- `codepoint` (optional) - single codepoint split into parts, each starting with `U+`
 > If `structure.filenames` is `codepoint`, this will be used as the filename, with `U+` stripped and joined with `_`
-- `shortcodes`: list of shortcodes.
+- `root_codepoint` (optional) - codepoint used to generate alternates in the output metadata
+- `shortcodes` - list of shortcodes.
 > The first one will be used as the filename if `structure.filenames` is `shortcode`
-- `tags`: used to select which targets this emoji will be built for
-- `src`: path to the svg file, **relative to the manifest file**
-- `colormaps` create multiple emoji entries, one for each colormap.
+- `tags` - used to select which targets this emoji will be built for
+- `src` - path to the svg file, **relative to the manifest file**
+- `colormaps` (optional) - create multiple emoji entries, one for each colormap
 > `%label`, `%shortcode`, `%codepoint`, `%description` will be replaced, and the svg will be recolored with the colormap's entries.
 
 > If emojis have overlapping tags, they can't have overlapping names and labels
